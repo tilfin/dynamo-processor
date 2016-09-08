@@ -1,0 +1,30 @@
+{
+  "name": "dynamo-processor",
+  "version": "0.1.0",
+  "description": "DynamoDB operation processor for Node.js",
+  "main": "main.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tilfin/dynamo-processor.git"
+  },
+  "keywords": [
+    "DynamoDB",
+    "operation"
+  ],
+  "author": "Toshimitsu Takahashi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tilfin/dynamo-processor/issues"
+  },
+  "homepage": "https://github.com/tilfin/dynamo-processor#readme",
+  "dependencies": {
+    "dynamo-converter": "^1.0.1",
+    "lodash": "^4.15.0"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.5.6"
+  }
+}
