@@ -7,7 +7,8 @@ jdk:
 install:
   - mkdir /tmp/dynamodb
   - wget -O - http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest | tar xz --directory /tmp/dynamodb
-script: 'npm test'
+  - npm install
+script: npm test
 before_script:
   - java -Xms256M -Xmx256M -Xss2M -Djava.library.path=/tmp/dynamodb/DynamoDBLocal_lib -jar /tmp/dynamodb/DynamoDBLocal.jar -sharedDb -inMemory &
   - sleep 3
