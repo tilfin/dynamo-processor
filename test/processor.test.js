@@ -51,6 +51,26 @@ describe('DynamoProcessor', () => {
         });
     });
 
+    it('puts items', () => {
+      const data1 = { id: 10, name: 'Karen' };
+      const data2 = { id: 11, name: 'Hana' };
+
+      return dp.procPromise({
+          table: 'tests',
+          items: [data1, data2]
+        })
+        .then(() => {
+          return helper.getDoc(10);
+        })
+        .then((dbItem) => {
+          expect(dbItem).to.deep.equal(data1);
+          return helper.getDoc(11);
+        })
+        .then((dbItem) => {
+          expect(dbItem).to.deep.equal(data2);
+        });
+    });
+
     it('updates an item', () => {
       return dp.procPromise({
           table: 'tests',
@@ -68,6 +88,51 @@ describe('DynamoProcessor', () => {
               cards: helper.docClient.createSet([1, 2])
             });
         });
+    });
+
+    it('updates an item with remove', () => {
+      return dp.procPromise({
+          table: 'tests',
+          key: { id: 2 },
+          remove: ['weight']
+        })
+        .then((item) => {
+          delete data.weight;
+          expect(item).to.deep.equal(data);
+        });
+    });
+
+    context('with initFields', () => {
+      it('updates an item with initial fields', () => {
+        return dp.procPromise({
+            table: 'tests',
+            key: { id: 4 },
+            set: {
+              'map1 foo': 1
+            },
+            pushset: {
+              'map2 bar': 'a'
+            },
+            add: {
+              'map2 size': 3
+            }
+          }, {
+            initFields: {
+              map1: {}, map2: {}, list: []
+            }
+          })
+          .then((item) => {
+            expect(item).to.deep.equal({
+              id: 4,
+              list: [],
+              map1: { foo: 1 },
+              map2: {
+                bar: helper.docClient.createSet(['a']),
+                size: 3
+              }
+            });
+          });
+      })
     });
   });
 });

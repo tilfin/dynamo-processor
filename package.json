@@ -1,10 +1,11 @@
 {
   "name": "dynamo-processor",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "DynamoDB operation processor for Node.js",
   "main": "main.js",
   "scripts": {
-    "test": "NODE_ENV=test ./node_modules/.bin/mocha"
+    "test": "./node_modules/.bin/mocha",
+    "coverage": "./node_modules/.bin/istanbul cover _mocha -r test/**.test.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,7 @@
   "devDependencies": {
     "aws-sdk": "^2.5.6",
     "chai": "^3.5.0",
+    "istanbul": "^0.4.5",
     "mocha": "^3.0.2"
   }
 }
