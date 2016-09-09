@@ -15,7 +15,7 @@ $ npm install -save dynamo-processor
 ## How to Use
 
 ```
-const dp = require('dynamo-processor')();
+const dp = require('dynamo-processor')({ region: 'ap-northeast-1' });
 ```
 
 ### getItem
@@ -29,7 +29,7 @@ dp.procPromise({
   }
 })
 .then((item) => {
-  console.log(item); 
+  console.log(item);
 });
 ```
 
@@ -49,7 +49,7 @@ dp.procPromise({
   }
 })
 .then((item) => {
-  console.log(item); 
+  console.log(item);
 });
 ```
 
@@ -69,7 +69,7 @@ dp.procPromise({
   }
 })
 .then((item) => {
-  console.log(item); 
+  console.log(item);
 });
 ```
 
@@ -87,7 +87,7 @@ dp.procPromise({
   }
 })
 .then((item) => {
-  console.log(item); 
+  console.log(item);
 });
 ```
 
@@ -106,6 +106,6 @@ dp.procPromise({
   ]
 })
 .then((item) => {
-  console.log(item); 
+  console.log(item);
 });
 ```
