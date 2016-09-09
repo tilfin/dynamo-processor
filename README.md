@@ -1,6 +1,9 @@
 dynamo-processor
 ================
 
+[![NPM Version][npm-image]][npm-url]
+[![Build Status](https://travis-ci.org/tilfin/dynamo-processor.svg?branch=master)](https://travis-ci.org/tilfin/dynamo-processor)
+
 DynamoDB processor operates a process by simple JSON expression.
 
 * Node.js 4.2 or later
@@ -109,3 +112,12 @@ dp.procPromise({
   console.log(item);
 });
 ```
+
+
+## LICENSE
+
+MIT
+
+
+[npm-image]: https://img.shields.io/npm/v/dynamo-processor.svg
+[npm-url]: https://npmjs.org/package/dynamo-processor
