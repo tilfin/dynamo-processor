@@ -3,9 +3,13 @@ dynamo-processor
 
 [![NPM Version][npm-image]][npm-url]
 [![Build Status](https://travis-ci.org/tilfin/dynamo-processor.svg?branch=master)](https://travis-ci.org/tilfin/dynamo-processor)
+[![Coverage Status](https://coveralls.io/repos/github/tilfin/dynamo-processor/badge.svg?branch=master)](https://coveralls.io/github/tilfin/dynamo-processor?branch=master)
 
 DynamoDB processor operates a process by simple JSON expression.
 
+## Features
+
+* If it have failed to set child objects to Map Type field, auto trying to update with initial fields again. futhermore, If it have failed by the conflict, auto trying the updating process at first once more.
 * Node.js 4.2 or later
 
 ## Install
