@@ -10,7 +10,9 @@ const awsOpts = {
 };
 
 const dynamodb = new AWS.DynamoDB(awsOpts);
-const docClient = new AWS.DynamoDB.DocumentClient(awsOpts);
+const docClient = new AWS.DynamoDB.DocumentClient({ service: dynamodb });
+
+exports.awsOpts = awsOpts;
 exports.docClient = docClient;
 
 exports.createTable = function(done) {

@@ -5,12 +5,7 @@ const expect = chai.expect;
 const assert = chai.assert;
 const helper = require('./helper');
 
-const dp = require('../main')({
-  accessKeyId: 'dummy',
-  secretAccessKey: 'dummy',
-  region: 'us-east-1',
-  endpoint: new AWS.Endpoint('http://localhost:8000')
-});
+const dp = require('../main')(helper.awsOpts);
 
 describe('DynamoProcessor', () => {
   before(helper.createTable);

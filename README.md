@@ -36,7 +36,7 @@ dp.proc({
   }
 })
 .then((item) => {
-  console.log(item);
+  console.log(item); // { name: 'Taro', id: 1, age: 16 }
 });
 ```
 
@@ -52,8 +52,8 @@ dp.proc({
   ]
 })
 .then((items) => {
-  console.log(items[0]);
-  console.log(items[1]);
+  console.log(items[0]); // { id: 1, ... }
+  console.log(items[1]); // { id: 2, ... }
 });
 ```
 
@@ -74,6 +74,10 @@ dp.proc({
 })
 .then((item) => {
   console.log(item);
+  // { name: 'Michael',
+  //   id: 2,
+  //   address: { prefecture: 'Osaka' },
+  //   age: 25 }
 });
 ```
 
@@ -85,15 +89,18 @@ dp.proc({
   action: 'put', // optional
   items: [
     { id: 2, name: 'Michael' },
-    { id: 2, name: 'Cindy' }
+    { id: 3, name: 'Cindy' }
   ]
 })
 .then((unprocessedItems) => {
-  console.log(unprocessedItems);
+  console.log(unprocessedItems); // {} shows all success
 });
 ```
 
 ### updateItem (SET)
+
+The space in a key is instead of the separator (`.`) between parent and child
+because a space is rarely used for a variable name.
 
 ```
 dp.proc({
@@ -110,6 +117,10 @@ dp.proc({
 })
 .then((item) => {
   console.log(item);
+  // { name: 'Taro',
+  //   id: 3,
+  //   address: { prefecture: 'Tokyo' },
+  //   age: 14 }
 });
 ```
 
@@ -128,10 +139,16 @@ dp.proc({
 })
 .then((item) => {
   console.log(item);
+  // { name: 'Taro',
+  //   id: 3,
+  //   address: { prefecture: 'Tokyo' },
+  //   age: 15 }  age was incremented
 });
 ```
 
 ### updateItem (ADD to set)
+
+`pushset` is adding to NumberSet or StringSet or BinarySet.
 
 ```
 dp.proc({
@@ -156,7 +173,7 @@ dp.proc({
   table: 'users',
   action: 'update', // optional
   key: {
-    id: 4
+    id: 3
   },
   remove: [
     'age',
@@ -165,6 +182,9 @@ dp.proc({
 })
 .then((item) => {
   console.log(item);
+  // { name: 'Taro',
+  //   id: 3,
+  //   address: {} }  age and address.prefecture was removed
 });
 ```
 
@@ -184,8 +204,8 @@ Promise.all(
   }, { useBatch: false })
 )
 .then((items) => {
-  console.log(items[0]);
-  console.log(items[1]);
+  console.log(items[0]); // { id: 1, ... }
+  console.log(items[1]); // { id: 2, ... }
 });
 ```
 
@@ -203,8 +223,8 @@ Promise.all(
   }, { useBatch: false })
 )
 .then((items) => {
-  console.log(items[0]);
-  console.log(items[1]);
+  console.log(items[0]); // { id: 1, ... }
+  console.log(items[1]); // { id: 2, ... }
 });
 ```
 
