@@ -21,6 +21,10 @@ $ npm install -save dynamo-processor
 const dp = require('dynamo-processor')({ region: 'ap-northeast-1' });
 ```
 
+### dp#proc
+
+`proc` method is to analyze an item and to process the item by the action
+
 ### getItem
 
 ```
@@ -33,6 +37,23 @@ dp.proc({
 })
 .then((item) => {
   console.log(item);
+});
+```
+
+### batchGetItem
+
+```
+dp.proc({
+  table: 'users',
+  action: 'get', // optional
+  keys: [
+    { id: 1 },
+    { id: 2 }
+  ]
+})
+.then((items) => {
+  console.log(items[0]);
+  console.log(items[1]);
 });
 ```
 
@@ -53,6 +74,22 @@ dp.proc({
 })
 .then((item) => {
   console.log(item);
+});
+```
+
+### batchWriteItem (PutRequest)
+
+```
+dp.proc({
+  table: 'users',
+  action: 'put', // optional
+  items: [
+    { id: 2, name: 'Michael' },
+    { id: 2, name: 'Cindy' }
+  ]
+})
+.then((unprocessedItems) => {
+  console.log(unprocessedItems);
 });
 ```
 
@@ -94,6 +131,24 @@ dp.proc({
 });
 ```
 
+### updateItem (ADD to set)
+
+```
+dp.proc({
+  table: 'users',
+  action: 'update', // optional
+  key: {
+    id: 4
+  },
+  pushset: {
+    cards: 30
+  }
+})
+.then((item) => {
+  console.log(item);
+});
+```
+
 ### updateItem (REMOVE)
 
 ```
@@ -113,6 +168,45 @@ dp.proc({
 });
 ```
 
+### Multiple items
+
+#### getItems as Promise Array
+
+```
+Promise.all(
+  dp.proc({
+    table: 'users',
+    action: 'get', // optional
+    keys: [
+      { id: 1 },
+      { id: 2 }
+    ]
+  }, { useBatch: false })
+)
+.then((items) => {
+  console.log(items[0]);
+  console.log(items[1]);
+});
+```
+
+#### putItems as Promise Array
+
+```
+Promise.all(
+  dp.proc({
+    table: 'users',
+    action: 'put', // optional
+    items: [
+      { id: 1, val: 'foo' },
+      { id: 2, val: 'bar' }
+    ]
+  }, { useBatch: false })
+)
+.then((items) => {
+  console.log(items[0]);
+  console.log(items[1]);
+});
+```
 
 ## LICENSE
 
