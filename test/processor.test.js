@@ -1,6 +1,8 @@
 const AWS = require('aws-sdk');
+const _ =  require('lodash');
 const chai = require('chai');
 const expect = chai.expect;
+const assert = chai.assert;
 const helper = require('./helper');
 
 const dp = require('../main')({
@@ -10,12 +12,11 @@ const dp = require('../main')({
   endpoint: new AWS.Endpoint('http://localhost:8000')
 });
 
-
 describe('DynamoProcessor', () => {
   before(helper.createTable);
   after(helper.deleteTable);
 
-  describe('#procPromise', () => {
+  describe('#proc', () => {
     const data = {
       id: 1,
       name: 'Taro',
@@ -28,7 +29,7 @@ describe('DynamoProcessor', () => {
     });
 
     it('gets an item', () => {
-      return dp.procPromise({
+      return dp.proc({
           table: 'tests',
           key: { id: 1 }
         })
@@ -37,9 +38,19 @@ describe('DynamoProcessor', () => {
         });
     });
 
+    it('gets null', () => {
+      return dp.proc({
+          table: 'tests',
+          key: { id: -1 }
+        })
+        .then((item) => {
+          expect(item).to.be.null;
+        });
+    });
+
     it('puts an item', () => {
       data.id = 2;
-      return dp.procPromise({
+      return dp.proc({
           table: 'tests',
           item: data
         })
@@ -51,28 +62,8 @@ describe('DynamoProcessor', () => {
         });
     });
 
-    it('puts items', () => {
-      const data1 = { id: 10, name: 'Karen' };
-      const data2 = { id: 11, name: 'Hana' };
-
-      return dp.procPromise({
-          table: 'tests',
-          items: [data1, data2]
-        })
-        .then(() => {
-          return helper.getDoc(10);
-        })
-        .then((dbItem) => {
-          expect(dbItem).to.deep.equal(data1);
-          return helper.getDoc(11);
-        })
-        .then((dbItem) => {
-          expect(dbItem).to.deep.equal(data2);
-        });
-    });
-
     it('updates an item', () => {
-      return dp.procPromise({
+      return dp.proc({
           table: 'tests',
           key: { id: 3 },
           set: { name: 'Ken' },
@@ -91,7 +82,7 @@ describe('DynamoProcessor', () => {
     });
 
     it('updates an item with remove', () => {
-      return dp.procPromise({
+      return dp.proc({
           table: 'tests',
           key: { id: 2 },
           remove: ['weight']
@@ -104,7 +95,7 @@ describe('DynamoProcessor', () => {
 
     context('with initFields', () => {
       it('updates an item with initial fields', () => {
-        return dp.procPromise({
+        return dp.proc({
             table: 'tests',
             key: { id: 4 },
             set: {
@@ -133,6 +124,75 @@ describe('DynamoProcessor', () => {
             });
           });
       })
+    });
+
+    context('multiple items', () => {
+      const data1 = { id: 10, name: 'Karen' };
+      const data2 = { id: 11, name: 'Hana' };
+      const data3 = { id: 12, name: 'Nancy' };
+      const data4 = { id: 13, name: 'Jiro' };
+
+      before(() => {
+        return Promise.all([
+          helper.putDoc(data1),
+          helper.putDoc(data2),
+        ])
+      });
+
+      it('gets items', () => {
+        return dp.proc({
+            table: 'tests',
+            keys: [{ id: 10 }, { id: 11 }]
+          })
+          .then((items) => {
+            expect(_.sortBy(items, 'id'))
+            .to.deep.equal(_.sortBy([data1, data2], 'id'));
+          });
+      });
+
+      it('gets items as promise array', () => {
+        return Promise.all(dp.proc({
+            table: 'tests',
+            keys: [{ id: 10 }, { id: 11 }]
+          }, { useBatch: false }))
+          .then((items) => {
+            expect(items).to.deep.equal([data1, data2]);
+          });
+      });
+
+      it('puts items', () => {
+        return dp.proc({
+            table: 'tests',
+            items: [data3, data4]
+          })
+          .then(() => {
+            return helper.getDoc(12);
+          })
+          .then((dbItem) => {
+            expect(dbItem).to.deep.equal(data3);
+            return helper.getDoc(13);
+          })
+          .then((dbItem) => {
+            expect(dbItem).to.deep.equal(data4);
+          });
+      });
+
+      it('puts items as promise array', () => {
+        return Promise.all(dp.proc({
+            table: 'tests',
+            items: [data3, data4]
+          }, { useBatch: false }))
+          .then((promises) => {
+            return helper.getDoc(12);
+          })
+          .then((dbItem) => {
+            expect(dbItem).to.deep.equal(data3);
+            return helper.getDoc(13);
+          })
+          .then((dbItem) => {
+            expect(dbItem).to.deep.equal(data4);
+          });
+      });
     });
   });
 });

@@ -24,7 +24,7 @@ const dp = require('dynamo-processor')({ region: 'ap-northeast-1' });
 ### getItem
 
 ```
-dp.procPromise({
+dp.proc({
   table: 'users',
   action: 'get', // optional
   key: {
@@ -39,7 +39,7 @@ dp.procPromise({
 ### putItem
 
 ```
-dp.procPromise({
+dp.proc({
   table: 'users',
   action: 'put', // optional
   item: {
@@ -59,7 +59,7 @@ dp.procPromise({
 ### updateItem (SET)
 
 ```
-dp.procPromise({
+dp.proc({
   table: 'users',
   action: 'update', // optional
   key: {
@@ -79,7 +79,7 @@ dp.procPromise({
 ### updateItem (ADD)
 
 ```
-dp.procPromise({
+dp.proc({
   table: 'users',
   action: 'update', // optional
   key: {
@@ -97,7 +97,7 @@ dp.procPromise({
 ### updateItem (REMOVE)
 
 ```
-dp.procPromise({
+dp.proc({
   table: 'users',
   action: 'update', // optional
   key: {
