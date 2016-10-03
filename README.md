@@ -25,6 +25,12 @@ $ npm install -save dynamo-processor
 const dp = require('dynamo-processor')({ region: 'ap-northeast-1' });
 ```
 
+`require('dynamo-processor')(options)`
+
+* **options** `<Object>` AWS Config options as well
+  * **wrapFunc** `<Boolean>` If this is true, proc method returns a _Function_ that wraps the _Promise_ in case that promise evaluation need lazy. (default is false)
+
+
 ### dp#proc
 
 `proc` method is to analyze an item and to process the item by the action
