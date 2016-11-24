@@ -118,7 +118,39 @@ describe('DynamoProcessor', () => {
               }
             });
           });
-      })
+      });
+    });
+
+    context('with initFields contain a field has value', () => {
+      it('updates an item with initial and the field was not overwritten', () => {
+        return helper.putDoc({
+            id: 5,
+            str: 'something'
+          })
+          .then(data => {
+            return dp.proc({
+                table: 'tests',
+                key: { id: 5 },
+                set: {
+                  'map1 bar': 'abc'
+                }
+              }, {
+                initFields: {
+                  str: null, map1: {}, map2: {}
+                }
+              })
+          })
+          .then((item) => {
+            expect(item).to.deep.equal({
+              id: 5,
+              str: 'something',
+              map1: {
+                bar: 'abc'
+              },
+              map2: {}
+            });
+          });
+      });
     });
 
     context('multiple items', () => {
