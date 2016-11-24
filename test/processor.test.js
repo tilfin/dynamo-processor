@@ -153,6 +153,62 @@ describe('DynamoProcessor', () => {
       });
     });
 
+    context('concurrent update with initFields', () => {
+      it('updates an item avoiding conflicts', () => {
+        const initFields = {
+          str: null, map1: {}, map2: {}, map3: {}
+        };
+
+        return helper.putDoc({
+            id: 6,
+            str: 'something'
+          })
+          .then(data => {
+            return Promise.all([
+                dp.proc({
+                  table: 'tests',
+                  key: { id: 6 },
+                  set: {
+                    'map1 left': true
+                  }
+                }, { initFields }),
+                dp.proc({
+                  table: 'tests',
+                  key: { id: 6 },
+                  set: {
+                    'map2 right': 'string'
+                  }
+                }, { initFields }),
+                dp.proc({
+                  table: 'tests',
+                  key: { id: 6 },
+                  set: {
+                    'map3 center': 123
+                  }
+                }, { initFields })
+              ])
+          })
+          .then(results => {
+            return helper.getDoc(6);
+          })
+          .then(item => {
+            expect(item).to.deep.equal({
+              id: 6,
+              str: 'something',
+              map1: {
+                left: true
+              },
+              map2: {
+                right: 'string'
+              },
+              map3: {
+                center: 123
+              }
+            });
+          });
+      });
+    });
+
     context('multiple items', () => {
       const data1 = { id: 10, name: 'Karen' };
       const data2 = { id: 11, name: 'Hana' };
