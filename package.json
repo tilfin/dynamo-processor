@@ -1,11 +1,11 @@
 {
   "name": "dynamo-processor",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "DynamoDB operation processor for Node.js",
   "main": "main.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha",
-    "coverage": "./node_modules/.bin/istanbul cover _mocha -r test/**.test.js"
+    "test": "mocha",
+    "coverage": "istanbul cover _mocha -r test/**.test.js"
   },
   "repository": {
     "type": "git",
@@ -22,14 +22,17 @@
   },
   "homepage": "https://github.com/tilfin/dynamo-processor#readme",
   "dependencies": {
-    "lodash": "^4.15.0"
+    "lodash": "^4.17.5"
   },
   "devDependencies": {
-    "aws-sdk": "^2.5.6",
-    "chai": "^3.5.0",
-    "coveralls": "^2.11.12",
-    "istanbul": "^0.4.5",
-    "mocha": "^3.0.2",
-    "mocha-lcov-reporter": "^1.2.0"
+    "aws-sdk": "^2.224.1",
+    "chai": "^4.1.2",
+    "coveralls": "^3.0.0",
+    "istanbul": "*",
+    "mocha": "^5.0.5",
+    "mocha-lcov-reporter": "*"
+  },
+  "engines": {
+    "node": ">=6"
   }
 }

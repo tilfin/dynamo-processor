@@ -2,6 +2,7 @@ dynamo-processor
 ================
 
 [![NPM Version][npm-image]][npm-url]
+[![Node](https://img.shields.io/node/v/dynamo-processor.svg)]()
 [![Build Status](https://travis-ci.org/tilfin/dynamo-processor.svg?branch=master)](https://travis-ci.org/tilfin/dynamo-processor)
 [![Coverage Status](https://coveralls.io/repos/github/tilfin/dynamo-processor/badge.svg?branch=master)](https://coveralls.io/github/tilfin/dynamo-processor?branch=master)
 
@@ -240,8 +241,7 @@ Promise.all(
 
 ## LICENSE
 
-MIT
-
+[MIT](LICENSE)
 
 [npm-image]: https://img.shields.io/npm/v/dynamo-processor.svg
 [npm-url]: https://npmjs.org/package/dynamo-processor
