@@ -10,7 +10,7 @@ DynamoDB processor operates a process by simple JSON expression.
 ## Features
 
 * If it have failed to set child objects to Map Type field, auto trying to update with initial fields again. futhermore, If it have failed by the conflict, auto trying the updating process at first once more.
-* Node.js 4.2 or later
+* Node.js 6.10 or later
 
 ## Install
 
