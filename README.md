@@ -239,7 +239,7 @@ Promise.all(
 });
 ```
 
-## Create a table
+### createTable
 
 ```js
 dp.createTable('producthistories', {
@@ -255,12 +255,12 @@ dp.createTable('producthistories', {
 });
 ```
 
-## Delete a table
+### deleteTable
 
 ```js
 dp.deleteTable('producthistories')
 .then(() => {
-  console.log('Succeeded to create table')
+  console.log('Delete to create table')
 });
 ```
 
