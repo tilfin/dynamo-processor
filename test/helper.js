@@ -1,4 +1,3 @@
-const dbSchema = require('./fixtures/schema');
 const AWS = require('aws-sdk');
 const TABLE = 'tests';
 
@@ -14,20 +13,6 @@ const docClient = new AWS.DynamoDB.DocumentClient({ service: dynamodb });
 
 exports.awsOpts = awsOpts;
 exports.docClient = docClient;
-
-exports.createTable = function(done) {
-  dynamodb.createTable(dbSchema[TABLE], function(err) {
-      if (err) done(err)
-      else done();
-    });
-}
-
-exports.deleteTable = function(done) {
-  dynamodb.deleteTable({ TableName: TABLE }, function(err) {
-      if (err) done(err)
-      else done();
-    });
-}
 
 exports.getDoc = function(id) {
   return new Promise(function(resolve, reject) {

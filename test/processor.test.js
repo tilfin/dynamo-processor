@@ -8,8 +8,13 @@ const helper = require('./helper');
 const dp = require('../main')(helper.awsOpts);
 
 describe('DynamoProcessor', () => {
-  before(helper.createTable);
-  after(helper.deleteTable);
+  before(() => {
+    return dp.createTable('tests', { id: 'N' })
+  })
+
+  after(() => {
+    return dp.deleteTable('tests')
+  })
 
   describe('#proc', () => {
     const data = {
@@ -278,4 +283,76 @@ describe('DynamoProcessor', () => {
       });
     });
   });
+
+  describe('#createTable and #deleteTable', () => {
+    context('only HASH key without options', () => {
+      const TABLE_NAME = 'hash-table'
+
+      it('creates and deletes', () => {
+        const ddb = new AWS.DynamoDB(helper.awsOpts);
+
+        return Promise.resolve()
+          .then(() => {
+            return dp.createTable(TABLE_NAME, { hashOnly: 'N' })
+          })
+          .then(() => {
+            return ddb.describeTable({ TableName: TABLE_NAME }).promise()
+          })
+          .then(({ Table }) => {
+            expect(Table.AttributeDefinitions[0].AttributeName).to.eq('hashOnly')
+            expect(Table.AttributeDefinitions[0].AttributeType).to.eq('N')
+            expect(Table.AttributeDefinitions.length).to.eq(1)
+            expect(Table.KeySchema[0].AttributeName).to.eq('hash')
+            expect(Table.KeySchema[0].KeyType).to.eq('HASH')
+            expect(Table.KeySchema.length).to.eq(1)
+            expect(Table.ProvisionedThroughput.ReadCapacityUnits).to.eq(5)
+            expect(Table.ProvisionedThroughput.WriteCapacityUnits).to.eq(5)
+          })
+          .catch(err => {
+            console.error(err)          
+          })
+          .then(() => {
+            return dp.deleteTable(TABLE_NAME)
+          })
+      })
+    })
+
+    context('HASH and RANGE keys with options', () => {
+      const TABLE_NAME = 'hashrange-table'
+
+      it('creates and deletes', () => {
+        const ddb = new AWS.DynamoDB(helper.awsOpts);
+
+        return Promise.resolve()
+          .then(() => {
+            return dp.createTable(TABLE_NAME, {
+              hash: 'S', range: 'N'
+            }, {
+              readCU: 11, writeCU: 12
+            })
+          })
+          .then(() => {
+            return ddb.describeTable({ TableName: TABLE_NAME }).promise()
+          })
+          .then(({ Table }) => {
+            expect(Table.AttributeDefinitions[0].AttributeName).to.eq('hash');
+            expect(Table.AttributeDefinitions[0].AttributeType).to.eq('S');
+            expect(Table.AttributeDefinitions[1].AttributeName).to.eq('range');
+            expect(Table.AttributeDefinitions[1].AttributeType).to.eq('N');
+            expect(Table.KeySchema[0].AttributeName).to.eq('hash');
+            expect(Table.KeySchema[0].KeyType).to.eq('HASH');
+            expect(Table.KeySchema[1].AttributeName).to.eq('range');
+            expect(Table.KeySchema[1].KeyType).to.eq('RANGE');
+            expect(Table.ProvisionedThroughput.ReadCapacityUnits).to.eq(11);
+            expect(Table.ProvisionedThroughput.WriteCapacityUnits).to.eq(12);
+          })
+          .catch(err => {
+            console.error(err)          
+          })
+          .then(() => {
+            return dp.deleteTable(TABLE_NAME)
+          })
+      })
+    })
+  })
 });

@@ -239,6 +239,31 @@ Promise.all(
 });
 ```
 
+## Create a table
+
+```js
+dp.createTable('producthistories', {
+    productId: 'S', // HASH key
+    version: 'N'    // RANGE key
+  },
+  { // options
+    readCU: 20, // default 5
+    writeCU: 3   // default 5
+  })
+.then(() => {
+  console.log('Succeeded to create table')
+});
+```
+
+## Delete a table
+
+```js
+dp.deleteTable('producthistories')
+.then(() => {
+  console.log('Succeeded to create table')
+});
+```
+
 ## LICENSE
 
 [MIT](LICENSE)

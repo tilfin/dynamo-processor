@@ -11,8 +11,13 @@ opts.wrapFunc = true;
 const dp = require('../main')(opts);
 
 describe('DynamoProcessor with wrapFunc = true', () => {
-  before(helper.createTable);
-  after(helper.deleteTable);
+  before(() => {
+    return dp.createTable('tests', { id: 'N' })
+  })
+
+  after(() => {
+    return dp.deleteTable('tests')
+  })
 
   describe('#proc', () => {
     const data = {
