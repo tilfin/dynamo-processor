@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  localstack:
+    image: localstack/localstack
+    environment:
+      SERVICES: dynamodb
+    ports:
+      - 8000:4569
