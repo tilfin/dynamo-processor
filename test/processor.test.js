@@ -21,7 +21,9 @@ describe('DynamoProcessor', () => {
       id: 1,
       name: 'Taro',
       age: 16,
-      weight: 55.3
+      weight: 55.3,
+      tags: dp.createSet(['abc', 'def']),
+      numset: dp.createSet([10, 20, 30])
     };
 
     before(() => {
