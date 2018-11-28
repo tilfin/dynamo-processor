@@ -1,6 +1,6 @@
 {
   "name": "dynamo-processor",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "DynamoDB operation processor for Node.js",
   "main": "main.js",
   "scripts": {
@@ -22,14 +22,14 @@
   },
   "homepage": "https://github.com/tilfin/dynamo-processor#readme",
   "dependencies": {
-    "lodash": "^4.17.5"
+    "lodash": "^4.17.11"
   },
   "devDependencies": {
-    "aws-sdk": "^2.224.1",
-    "chai": "^4.1.2",
-    "coveralls": "^3.0.0",
+    "aws-sdk": "^2.364.0",
+    "chai": "^4.2.0",
+    "coveralls": "^3.0.2",
     "istanbul": "*",
-    "mocha": "^5.0.5",
+    "mocha": "^5.2.0",
     "mocha-lcov-reporter": "*"
   },
   "engines": {

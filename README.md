@@ -32,7 +32,7 @@ const dp = require('dynamo-processor')({ region: 'ap-northeast-1' });
   * **wrapFunc** `<Boolean>` If this is true, proc method returns a _Function_ that wraps the _Promise_ in case that promise evaluation need lazy. (default is false)
 
 
-### dp#proc
+## dp#proc
 
 `proc` method is to analyze an item and to process the item by the action
 
@@ -254,6 +254,8 @@ dp.createTable('producthistories', {
   console.log('Succeeded to create table')
 });
 ```
+
+If first argument is object, it passes through as raw params. In short, `dp.createTable(params)` equals `dynamodb.createTable(params).promise()`.
 
 ### deleteTable
 

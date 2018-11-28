@@ -15,25 +15,16 @@ exports.awsOpts = awsOpts;
 exports.docClient = docClient;
 
 exports.getDoc = function(id) {
-  return new Promise(function(resolve, reject) {
-      docClient.get({
+  return docClient.get({
           TableName: TABLE,
-          Key: { id: id }
-        }, function(err, data){
-          if (err) reject(err)
-          else resolve(data.Item);
-        });
-    });
+          Key: { id }
+        }).promise()
+        .then(data => data.Item)
 }
 
 exports.putDoc = function(item) {
-  return new Promise(function(resolve, reject) {
-      docClient.put({
+  return docClient.put({
           TableName: TABLE,
           Item: item
-        }, function(err, data){
-          if (err) reject(err)
-          else resolve(data);
-        });
-    });
+        }).promise()
 }

@@ -21,7 +21,9 @@ describe('DynamoProcessor', () => {
       id: 1,
       name: 'Taro',
       age: 16,
-      weight: 55.3
+      weight: 55.3,
+      tags: dp.createSet(['abc', 'def']),
+      numset: dp.createSet([10, 20, 30])
     };
 
     before(() => {
@@ -347,7 +349,73 @@ describe('DynamoProcessor', () => {
             expect(Table.ProvisionedThroughput.WriteCapacityUnits).to.eq(12);
           })
           .catch(err => {
-            console.error(err)          
+            console.error(err)
+          })
+          .then(() => {
+            return dp.deleteTable(TABLE_NAME)
+          })
+      })
+    })
+
+    context('create table with raw params', () => {
+      const TABLE_NAME = 'hashrange-table'
+      const createParams = {
+        TableName: TABLE_NAME,
+        KeySchema: [
+          {
+            AttributeName: 'id',
+            KeyType: 'HASH'
+          }
+        ],
+        AttributeDefinitions: [
+          {
+            AttributeName: 'id',
+            AttributeType: 'N'
+          },
+          {
+            AttributeName: 'externalId',
+            AttributeType: 'S',
+          }
+        ],
+        GlobalSecondaryIndexes: [
+          {
+            IndexName: 'external-id-index',
+            KeySchema: [
+              {
+                AttributeName: 'externalId',
+                KeyType: 'HASH',
+              },
+            ],
+            Projection: {
+              ProjectionType: 'KEYS_ONLY',
+            },
+            ProvisionedThroughput: {
+              ReadCapacityUnits: 20,
+              WriteCapacityUnits: 10,
+            }
+          }
+        ],
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 8,
+          WriteCapacityUnits: 4,
+        }
+      }
+
+      it('creates and deletes', () => {
+        const ddb = new AWS.DynamoDB(helper.awsOpts);
+
+        return Promise.resolve()
+          .then(() => {
+            return dp.createTable(createParams)
+          })
+          .then(() => {
+            return ddb.describeTable({ TableName: TABLE_NAME }).promise()
+          })
+          .then(({ Table }) => {
+            expect(Table).to.deep.includes(createParams)
+          })
+          .catch(err => {
+            console.error(err)
           })
           .then(() => {
             return dp.deleteTable(TABLE_NAME)
