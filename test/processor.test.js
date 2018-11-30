@@ -95,6 +95,21 @@ describe('DynamoProcessor', () => {
         });
     });
 
+    it('deletes an item', () => {
+      return dp.proc({
+          action: 'delete',
+          table: 'tests',
+          key: { id: 2 }
+        })
+        .then(res => {
+          expect(res).to.be.null;
+          return helper.getDoc(2);
+        })
+        .then(dbItem => {
+          expect(dbItem).to.be.null
+        });
+    });
+
     context('with initFields', () => {
       it('updates an item with initial fields', () => {
         return dp.proc({
