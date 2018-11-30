@@ -199,6 +199,21 @@ dp.proc({
 });
 ```
 
+### deleteItem
+
+```
+dp.proc({
+  table: 'users',
+  action: 'delete',
+  key: {
+    id: 1
+  }
+})
+.then((item) => {
+  console.log(item); // null
+});
+```
+
 ### Multiple items
 
 #### getItems as Promise Array

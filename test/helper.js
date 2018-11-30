@@ -19,7 +19,7 @@ exports.getDoc = function(id) {
           TableName: TABLE,
           Key: { id }
         }).promise()
-        .then(data => data.Item)
+        .then(data => data.Item || null)
 }
 
 exports.putDoc = function(item) {
