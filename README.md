@@ -32,13 +32,16 @@ const dp = require('dynamo-processor')({ region: 'ap-northeast-1' });
   * **wrapFunc** `<Boolean>` If this is true, proc method returns a _Function_ that wraps the _Promise_ in case that promise evaluation need lazy. (default is false)
 
 
-## dp#proc
+## Methods
 
-`proc` method is to analyze an item and to process the item by the action
+* `proc` method is to analyze an item and to process the item by the action
+* `get`, `put`, `update`, `delete`, `batchWrite`, `batchDelete` methods as shortcut for each action
 
 ### getItem
 
-```
+#### proc({ action: 'get', table, key })
+
+```js
 dp.proc({
   table: 'users',
   action: 'get', // optional
@@ -51,9 +54,17 @@ dp.proc({
 });
 ```
 
+#### get(key)
+
+```js
+dp.get('users', { id: 1 });
+```
+
 ### batchGetItem
 
-```
+#### proc({ action: 'get', table, keys })
+
+```js
 dp.proc({
   table: 'users',
   action: 'get', // optional
@@ -70,7 +81,7 @@ dp.proc({
 
 ### putItem
 
-```
+```js
 dp.proc({
   table: 'users',
   action: 'put', // optional
@@ -94,7 +105,9 @@ dp.proc({
 
 ### batchWriteItem (PutRequest)
 
-```
+#### proc({ action: 'put', table, items })
+
+```js
 dp.proc({
   table: 'users',
   action: 'put', // optional
@@ -103,9 +116,18 @@ dp.proc({
     { id: 3, name: 'Cindy' }
   ]
 })
-.then((unprocessedItems) => {
-  console.log(unprocessedItems); // {} shows all success
+.then(unprocessedItems => {
+  console.log(unprocessedItems); // undefined shows all success
 });
+```
+
+#### batchWrite(table, items)
+
+```js
+dp.batchWrite('users', [
+  { id: 2, name: 'Michael' },
+  { id: 3, name: 'Cindy' }
+]);
 ```
 
 ### updateItem (SET)
@@ -113,7 +135,7 @@ dp.proc({
 The space in a key is instead of the separator (`.`) between parent and child
 because a space is rarely used for a variable name.
 
-```
+```js
 dp.proc({
   table: 'users',
   action: 'update', // optional
@@ -137,7 +159,7 @@ dp.proc({
 
 ### updateItem (ADD)
 
-```
+```js
 dp.proc({
   table: 'users',
   action: 'update', // optional
@@ -161,7 +183,7 @@ dp.proc({
 
 `pushset` is adding to NumberSet or StringSet or BinarySet.
 
-```
+```js
 dp.proc({
   table: 'users',
   action: 'update', // optional
@@ -179,7 +201,7 @@ dp.proc({
 
 ### updateItem (REMOVE)
 
-```
+```js
 dp.proc({
   table: 'users',
   action: 'update', // optional
@@ -201,7 +223,9 @@ dp.proc({
 
 ### deleteItem
 
-```
+#### proc({ action: 'delete', table, key })
+
+```js
 dp.proc({
   table: 'users',
   action: 'delete',
@@ -214,11 +238,44 @@ dp.proc({
 });
 ```
 
+#### delete(table, keys)
+
+```js
+dp.delete('users', { id: 1 });
+```
+
+### batchWriteItem (DeleteRequest)
+
+#### proc({ action: 'delete', table, keys })
+
+```js
+dp.proc({
+  table: 'users',
+  action: 'delete',
+  keys: [
+    { id: 2 },
+    { id: 3 }
+  ]
+})
+.then(unprocessedItemKeys => {
+  console.log(unprocessedItemKeys); // undefined shows all success
+});
+```
+
+#### batchDelete(table, keys)
+
+```js
+dp.batchDelete('users',[
+  { id: 2 },
+  { id: 3 }
+])
+```
+
 ### Multiple items
 
 #### getItems as Promise Array
 
-```
+```js
 Promise.all(
   dp.proc({
     table: 'users',
@@ -237,7 +294,7 @@ Promise.all(
 
 #### putItems as Promise Array
 
-```
+```js
 Promise.all(
   dp.proc({
     table: 'users',
@@ -251,6 +308,25 @@ Promise.all(
 .then((items) => {
   console.log(items[0]); // { id: 1, ... }
   console.log(items[1]); // { id: 2, ... }
+});
+```
+
+#### deleteItems as Promise Array
+
+```js
+Promise.all(
+  dp.proc({
+    table: 'users',
+    action: 'delete',
+    keys: [
+      { id: 1 },
+      { id: 2 }
+    ]
+  }, { useBatch: false })
+)
+.then(results => {
+  console.log(results[0]); // null
+  console.log(results[1]); // null
 });
 ```
 
