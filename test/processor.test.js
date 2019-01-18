@@ -270,15 +270,15 @@ describe('DynamoProcessor', () => {
             table: 'tests',
             items: [data3, data4]
           })
-          .then(() => {
-            return helper.getDoc(12);
+          .then(result => {
+            expect(result).to.be.undefined;
+            return Promise.all([
+              helper.getDoc(12),
+              helper.getDoc(13)
+            ])
           })
-          .then((dbItem) => {
-            expect(dbItem).to.deep.equal(data3);
-            return helper.getDoc(13);
-          })
-          .then((dbItem) => {
-            expect(dbItem).to.deep.equal(data4);
+          .then(dbItems => {
+            expect(dbItems).to.deep.equal([data3, data4]);
           });
       });
 
@@ -287,15 +287,50 @@ describe('DynamoProcessor', () => {
             table: 'tests',
             items: [data3, data4]
           }, { useBatch: false }))
-          .then((promises) => {
-            return helper.getDoc(12);
+          .then(() => {
+            return Promise.all([
+              helper.getDoc(12),
+              helper.getDoc(13)
+            ])
           })
-          .then((dbItem) => {
-            expect(dbItem).to.deep.equal(data3);
-            return helper.getDoc(13);
+          .then(dbItems => {
+            expect(dbItems).to.deep.equal([data3, data4]);
+          });
+      });
+
+      it('deletes items', () => {
+        return dp.proc({
+            action: 'delete',
+            table: 'tests',
+            keys: [{ id: 10 }, { id: 11 }]
           })
-          .then((dbItem) => {
-            expect(dbItem).to.deep.equal(data4);
+          .then(result => {
+            expect(result).to.be.undefined;
+            return Promise.all([
+              helper.getDoc(10),
+              helper.getDoc(11)
+            ])
+          })
+          .then(dbItems => {
+            expect(dbItems).to.deep.equal([null, null])
+          });
+      });
+
+      it('deletes items as promise array', () => {
+        return Promise.all(dp.proc({
+            action: 'delete',
+            table: 'tests',
+            keys: [{ id: 12 }, { id: 13 }]
+          }, { useBatch: false }))
+          .then(results => {
+            expect(results).to.deep.equal([null, null]);
+            return Promise.all([
+              helper.getDoc(12),
+              helper.getDoc(13)
+            ])
+          })
+          .then(dbItems => {
+            expect(dbItems).to.deep.equal([null, null])
           });
       });
     });
