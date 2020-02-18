@@ -6,7 +6,7 @@
   "types": "main.d.ts",
   "scripts": {
     "test": "mocha",
-    "coverage": "istanbul cover _mocha -r test/**.test.js"
+    "coverage": "nyc npm test"
   },
   "repository": {
     "type": "git",
@@ -26,12 +26,11 @@
     "aws-sdk": "^2.364.0"
   },
   "devDependencies": {
-    "lodash": "^4.17.11",
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
-    "istanbul": "*",
-    "mocha": "^5.2.0",
-    "mocha-lcov-reporter": "*"
+    "lodash": "^4.17.11",
+    "mocha": "^6.1.4",
+    "nyc": "^15.0.0"
   },
   "engines": {
     "node": ">=10"
