@@ -1,4 +1,11 @@
-declare module 'dynamo-processor' {
+import AWS from 'aws-sdk'
+
+export = DP
+
+declare function DP(options?: DP.Options & AWS.DynamoDB.DocumentClient.DocumentClientOptions & AWS.DynamoDB.Types.ClientConfiguration): DP.DynamoProcessor;
+declare function DP(options?: DP.Options & AWS.DynamoDB.DocumentClient.DocumentClientOptions & AWS.DynamoDB.Types.ClientConfiguration): DP.DynamoProcessor;
+
+declare module DP {
   export interface Options {
     /**
      * Logger
@@ -10,8 +17,6 @@ declare module 'dynamo-processor' {
      */
     wrapFunc?: boolean
   }
-
-  export default function (opts?: Options): DynamoProcessor;
 
   export type Key = Record<string, any>;
 
@@ -39,7 +44,8 @@ declare module 'dynamo-processor' {
      * @param table - TableName
      * @param key - Key
      */
-    get(table: string, key: Key): Promise<Item> | Function;
+    get(table: string, key: Key): Promise<Item>
+    get(table: string, key: Key): Function;
 
     /**
      * batchGetItem
@@ -47,28 +53,32 @@ declare module 'dynamo-processor' {
      * @param table - TableName
      * @param keys - Keys
      */
-    batchGet(table: string, keys: Key[]): Promise<Item[]> | Function;
+    batchGet(table: string, keys: Key[]): Promise<Item[]>;
+    batchGet(table: string, keys: Key[]): Function;
 
     /**
      * putItem
      * @param table - table name
      * @param item - Item
      */
-    put(table: string, item: Item): Promise<Item> | Function;
+    put(table: string, item: Item): Promise<Item>;
+    put(table: string, item: Item): Function;
 
     /**
      * deleteItem
      * @param table - TableName
      * @param key - Key
      */
-    delete(table: string, key: Key): Promise<null> | Function;
+    delete(table: string, key: Key): Promise<null>;
+    delete(table: string, key: Key): Function;
 
     /**
      * batchWriteItems
      * @param table - table name
      * @param items - Items
      */
-    batchWrite(table: string, items: Item[]): Promise<Item[]> | Function;
+    batchWrite(table: string, items: Item[]): Promise<Item[]>;
+    batchWrite(table: string, items: Item[]): Function;
 
     /**
      * batch delete items by batchWriteItems
@@ -77,6 +87,7 @@ declare module 'dynamo-processor' {
      * @param keys - Keys
      */
     batchDelete(table: string, keys: Key[]): Promise<string[]> | Function;
+    batchDelete(table: string, keys: Key[]): Function;
 
     /**
      * updateItem
@@ -86,7 +97,8 @@ declare module 'dynamo-processor' {
      * @param ops - Operations
      * @param init - Initial fields
      */
-    update(table: string, key: Key, ops: any, init: Item): Promise<Item> | Function;
+    update(table: string, key: Key, ops: any, init: Item): Promise<Item>;
+    update(table: string, key: Key, ops: any, init: Item): Function;
 
     /**
      * Create a set (This is wrapper for DocumentClient#createSet)
@@ -115,6 +127,7 @@ declare module 'dynamo-processor' {
      * @param data - Operation data
      * @param opts - Options
      */
-    proc(data: OperationData, opts?: { useBatch?: boolean, table?: string }): Promise<any> | Function;
+    proc(data: OperationData, opts?: { useBatch?: boolean, table?: string }): Promise<any>;
+    proc(data: OperationData, opts?: { useBatch?: boolean, table?: string }): Function;
   }
 }

@@ -2,8 +2,8 @@
   "name": "dynamo-processor",
   "version": "0.10.0",
   "description": "DynamoDB operation processor for Node.js",
-  "main": "main.js",
-  "types": "main.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "mocha",
     "coverage": "nyc npm test"
@@ -22,8 +22,8 @@
     "url": "https://github.com/tilfin/dynamo-processor/issues"
   },
   "homepage": "https://github.com/tilfin/dynamo-processor#readme",
-  "dependencies": {
-    "aws-sdk": "^2.364.0"
+  "peerDependencies": {
+    "aws-sdk": "2.x"
   },
   "devDependencies": {
     "chai": "^4.2.0",
