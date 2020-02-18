@@ -8,7 +8,7 @@ const helper = require('./helper');
 const opts = _.cloneDeep(helper.awsOpts);
 opts.wrapFunc = true;
 
-const dp = require('../main')(opts);
+const dp = require('../')(opts);
 
 describe('DynamoProcessor with wrapFunc = true', () => {
   before(() => {

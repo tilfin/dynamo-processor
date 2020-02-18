@@ -1,6 +1,6 @@
 {
   "name": "dynamo-processor",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "DynamoDB operation processor for Node.js",
   "main": "index.js",
   "types": "index.d.ts",
@@ -26,6 +26,7 @@
     "aws-sdk": "2.x"
   },
   "devDependencies": {
+    "aws-sdk": "2.x",
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
     "lodash": "^4.17.11",

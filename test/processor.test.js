@@ -5,7 +5,7 @@ const expect = chai.expect;
 const assert = chai.assert;
 const helper = require('./helper');
 
-const dp = require('../main')(helper.awsOpts);
+const dp = require('../')(helper.awsOpts);
 
 describe('DynamoProcessor', () => {
   before(() => {
