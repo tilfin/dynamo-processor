@@ -1,18 +1,15 @@
-const AWS = require('aws-sdk');
-const _ =  require('lodash');
-const chai = require('chai');
-const expect = chai.expect;
-const assert = chai.assert;
-const helper = require('./helper');
-
-const dp = require('../')(helper.awsOpts);
+const AWS = require('aws-sdk')
+const _ =  require('lodash')
+const helper = require('./helper')
+const DP = require('../lib')
+const dp = DP({ ...helper.awsOpts })
 
 describe('DynamoProcessor', () => {
-  before(() => {
+  beforeAll(() => {
     return dp.createTable('tests', { id: 'N' })
   })
 
-  after(() => {
+  afterAll(() => {
     return dp.deleteTable('tests')
   })
 
@@ -26,388 +23,367 @@ describe('DynamoProcessor', () => {
       numset: dp.createSet([10, 20, 30])
     };
 
-    before(() => {
+    beforeEach(() => {
       return helper.putDoc(data);
-    });
+    })
 
-    it('gets an item', () => {
-      return dp.proc({
-          table: 'tests',
-          key: { id: 1 }
-        })
-        .then((item) => {
-          expect(item).to.deep.equal(data);
-        });
-    });
+    it('gets an item', async () => {
+      const item = await dp.proc({
+        table: 'tests',
+        key: { id: 1 }
+      })
+      expect(item).toEqual(data)
+    })
 
-    it('gets null', () => {
-      return dp.proc({
-          table: 'tests',
-          key: { id: -1 }
-        })
-        .then((item) => {
-          expect(item).to.be.null;
-        });
-    });
+    it('gets null', async () => {
+      const item = await dp.proc({
+        table: 'tests',
+        key: { id: -1 }
+      })
+      expect(item).toBeNull()
+    })
 
-    it('puts an item', () => {
+    it('puts an item', async () => {
       data.id = 2;
-      return dp.proc({
+      await dp.proc({
+        table: 'tests',
+        item: data
+      })
+
+      const dbItem = await helper.getDoc(2)
+      expect(dbItem).toEqual(data)
+    })
+
+    it('updates an item', async () => {
+      await dp.proc({
+        table: 'tests',
+        key: { id: 3 },
+        set: { name: 'Ken' },
+        add: { age: 10 },
+        pushset: { cards:[1, 2] }
+      })
+
+      const dbItem = await helper.getDoc(3)
+      expect(dbItem).toEqual({
+        id: 3, name: 'Ken', age: 10,
+        cards: helper.docClient.createSet([1, 2])
+      })
+    })
+
+    it('updates an item with remove', async () => {
+      const item = await dp.proc({
+        table: 'tests',
+        key: { id: 2 },
+        remove: ['weight']
+      })
+      delete data.weight;
+      expect(item).toEqual(data)
+    })
+
+    it('updates an item with delete', async () => {
+      const item = await dp.proc({
+        table: 'tests',
+        key: { id: 2 },
+        delete: {
+          tags: 'abc',
+          numset: 20,
+        }
+      })
+      expect(item).toMatchObject({
+        name: 'Taro',
+        age: 16,
+        tags: new Set(['def']),
+        numset: new Set([10, 30]),
+      })
+    })
+
+    it('deletes an item', async () => {
+      const res = await dp.proc({
+        action: 'delete',
+        table: 'tests',
+        key: { id: 2 }
+      })
+      expect(res).toBeNull();
+
+      const dbItem = await helper.getDoc(2)
+      expect(dbItem).toBeNull()
+    })
+
+    describe('with initFields', () => {
+      it('updates an item with initial fields', async () => {
+        const item = await dp.proc({
           table: 'tests',
-          item: data
+          key: { id: 4 },
+          set: {
+            'map1 foo': 1
+          },
+          pushset: {
+            'map2 bar': 'a'
+          },
+          add: {
+            'map2 size': 3
+          }
+        }, {
+          initFields: {
+            map1: {}, map2: {}, list: []
+          }
         })
-        .then(() => {
-          return helper.getDoc(2);
-        })
-        .then((dbItem) => {
-          expect(dbItem).to.deep.equal(data);
-        });
-    });
 
-    it('updates an item', () => {
-      return dp.proc({
-          table: 'tests',
-          key: { id: 3 },
-          set: { name: 'Ken' },
-          add: { age: 10 },
-          pushset: { cards:[1, 2] }
+        expect(item).toEqual({
+          id: 4,
+          list: [],
+          map1: { foo: 1 },
+          map2: {
+            bar: helper.docClient.createSet(['a']),
+            size: 3
+          }
         })
-        .then(() => {
-          return helper.getDoc(3);
-        })
-        .then((dbItem) => {
-          expect(dbItem).to.deep.equal({
-              id: 3, name: 'Ken', age: 10,
-              cards: helper.docClient.createSet([1, 2])
-            });
-        });
-    });
+      })
+    })
 
-    it('updates an item with remove', () => {
-      return dp.proc({
-          table: 'tests',
-          key: { id: 2 },
-          remove: ['weight']
-        })
-        .then((item) => {
-          delete data.weight;
-          expect(item).to.deep.equal(data);
-        });
-    });
-
-    it('deletes an item', () => {
-      return dp.proc({
-          action: 'delete',
-          table: 'tests',
-          key: { id: 2 }
-        })
-        .then(res => {
-          expect(res).to.be.null;
-          return helper.getDoc(2);
-        })
-        .then(dbItem => {
-          expect(dbItem).to.be.null
-        });
-    });
-
-    context('with initFields', () => {
-      it('updates an item with initial fields', () => {
-        return dp.proc({
-            table: 'tests',
-            key: { id: 4 },
-            set: {
-              'map1 foo': 1
-            },
-            pushset: {
-              'map2 bar': 'a'
-            },
-            add: {
-              'map2 size': 3
-            }
-          }, {
-            initFields: {
-              map1: {}, map2: {}, list: []
-            }
-          })
-          .then((item) => {
-            expect(item).to.deep.equal({
-              id: 4,
-              list: [],
-              map1: { foo: 1 },
-              map2: {
-                bar: helper.docClient.createSet(['a']),
-                size: 3
-              }
-            });
-          });
-      });
-    });
-
-    context('with initFields contain a field has value', () => {
-      it('updates an item with initial and the field was not overwritten', () => {
+    describe('with initFields contain a field has value', () => {
+      beforeEach(() => {
         return helper.putDoc({
-            id: 5,
-            str: 'something'
-          })
-          .then(data => {
-            return dp.proc({
-                table: 'tests',
-                key: { id: 5 },
-                set: {
-                  'map1 bar': 'abc'
-                }
-              }, {
-                initFields: {
-                  str: null, map1: {}, map2: {}
-                }
-              })
-          })
-          .then((item) => {
-            expect(item).to.deep.equal({
-              id: 5,
-              str: 'something',
-              map1: {
-                bar: 'abc'
-              },
-              map2: {}
-            });
-          });
-      });
-    });
+          id: 5,
+          str: 'something'
+        })
+      })
 
-    context('concurrent update with initFields', () => {
-      it('updates an item avoiding conflicts', () => {
+      it('updates an item with initial and the field was not overwritten', async () => {
+        const item = await dp.proc({
+          table: 'tests',
+          key: { id: 5 },
+          set: {
+            'map1 bar': 'abc'
+          }
+        }, {
+          initFields: {
+            str: null, map1: {}, map2: {}
+          }
+        })
+
+        expect(item).toEqual({
+          id: 5,
+          str: 'something',
+          map1: {
+            bar: 'abc'
+          },
+          map2: {}
+        })
+      })
+    })
+
+    describe('concurrent update with initFields', () => {
+      beforeEach(() => {
+        return helper.putDoc({
+          id: 6,
+          str: 'something'
+        })
+      })
+
+      it('updates an item avoiding conflicts', async () => {
         const initFields = {
           str: null, map1: {}, map2: {}, map3: {}
         };
 
-        return helper.putDoc({
-            id: 6,
-            str: 'something'
-          })
-          .then(data => {
-            return Promise.all([
-                dp.proc({
-                  table: 'tests',
-                  key: { id: 6 },
-                  set: {
-                    'map1 left': true
-                  }
-                }, { initFields }),
-                dp.proc({
-                  table: 'tests',
-                  key: { id: 6 },
-                  set: {
-                    'map2 right': 'string'
-                  }
-                }, { initFields }),
-                dp.proc({
-                  table: 'tests',
-                  key: { id: 6 },
-                  set: {
-                    'map3 center': 123
-                  }
-                }, { initFields })
-              ])
-          })
-          .then(results => {
-            return helper.getDoc(6);
-          })
-          .then(item => {
-            expect(item).to.deep.equal({
-              id: 6,
-              str: 'something',
-              map1: {
-                left: true
-              },
-              map2: {
-                right: 'string'
-              },
-              map3: {
-                center: 123
-              }
-            });
-          });
-      });
-    });
+        await Promise.all([
+          dp.proc({
+            table: 'tests',
+            key: { id: 6 },
+            set: {
+              'map1 left': true
+            }
+          }, { initFields }),
+          dp.proc({
+            table: 'tests',
+            key: { id: 6 },
+            set: {
+              'map2 right': 'string'
+            }
+          }, { initFields }),
+          dp.proc({
+            table: 'tests',
+            key: { id: 6 },
+            set: {
+              'map3 center': 123
+            }
+          }, { initFields })
+        ])
 
-    context('multiple items', () => {
+        const item = await helper.getDoc(6);
+
+        expect(item).toEqual({
+          id: 6,
+          str: 'something',
+          map1: {
+            left: true
+          },
+          map2: {
+            right: 'string'
+          },
+          map3: {
+            center: 123
+          }
+        })
+      })
+    })
+
+    describe('multiple items', () => {
       const data1 = { id: 10, name: 'Karen' };
       const data2 = { id: 11, name: 'Hana' };
       const data3 = { id: 12, name: 'Nancy' };
       const data4 = { id: 13, name: 'Jiro' };
 
-      before(() => {
+      beforeEach(() => {
         return Promise.all([
           helper.putDoc(data1),
           helper.putDoc(data2),
         ])
-      });
+      })
 
-      it('gets items', () => {
-        return dp.proc({
-            table: 'tests',
-            keys: [{ id: 10 }, { id: 11 }]
-          })
-          .then((items) => {
-            expect(_.sortBy(items, 'id'))
-            .to.deep.equal(_.sortBy([data1, data2], 'id'));
-          });
-      });
+      it('gets items', async () => {
+        const items = await dp.proc({
+          table: 'tests',
+          keys: [{ id: 10 }, { id: 11 }]
+        })
+ 
+        expect(_.sortBy(items, 'id')).toEqual(_.sortBy([data1, data2], 'id'))
+      })
 
-      it('gets items as promise array', () => {
-        return Promise.all(dp.proc({
-            table: 'tests',
-            keys: [{ id: 10 }, { id: 11 }]
-          }, { useBatch: false }))
-          .then((items) => {
-            expect(items).to.deep.equal([data1, data2]);
-          });
-      });
+      it('gets items as promise array', async () => {
+        const items = await Promise.all(dp.proc({
+          table: 'tests',
+          keys: [{ id: 10 }, { id: 11 }]
+        }, { useBatch: false }))
 
-      it('puts items', () => {
-        return dp.proc({
-            table: 'tests',
-            items: [data3, data4]
-          })
-          .then(result => {
-            expect(result).to.be.undefined;
-            return Promise.all([
-              helper.getDoc(12),
-              helper.getDoc(13)
-            ])
-          })
-          .then(dbItems => {
-            expect(dbItems).to.deep.equal([data3, data4]);
-          });
-      });
+        expect(items).toEqual([data1, data2])
+      })
 
-      it('puts items as promise array', () => {
-        return Promise.all(dp.proc({
-            table: 'tests',
-            items: [data3, data4]
-          }, { useBatch: false }))
-          .then(() => {
-            return Promise.all([
-              helper.getDoc(12),
-              helper.getDoc(13)
-            ])
-          })
-          .then(dbItems => {
-            expect(dbItems).to.deep.equal([data3, data4]);
-          });
-      });
+      it('puts items', async () => {
+        const result = await dp.proc({
+          table: 'tests',
+          items: [data3, data4]
+        })
+        expect(result).toEqual([])
 
-      it('deletes items', () => {
-        return dp.proc({
-            action: 'delete',
-            table: 'tests',
-            keys: [{ id: 10 }, { id: 11 }]
-          })
-          .then(result => {
-            expect(result).to.be.undefined;
-            return Promise.all([
-              helper.getDoc(10),
-              helper.getDoc(11)
-            ])
-          })
-          .then(dbItems => {
-            expect(dbItems).to.deep.equal([null, null])
-          });
-      });
+        const dbItems = await Promise.all([
+          helper.getDoc(12),
+          helper.getDoc(13)
+        ])
+        expect(dbItems).toEqual([data3, data4])
+      })
 
-      it('deletes items as promise array', () => {
-        return Promise.all(dp.proc({
-            action: 'delete',
-            table: 'tests',
-            keys: [{ id: 12 }, { id: 13 }]
-          }, { useBatch: false }))
-          .then(results => {
-            expect(results).to.deep.equal([null, null]);
-            return Promise.all([
-              helper.getDoc(12),
-              helper.getDoc(13)
-            ])
-          })
-          .then(dbItems => {
-            expect(dbItems).to.deep.equal([null, null])
-          });
-      });
-    });
-  });
+      it('puts items as promise array', async () => {
+        await Promise.all(dp.proc({
+          table: 'tests',
+          items: [data3, data4]
+        }, { useBatch: false }))
+
+        const dbItems = await Promise.all([
+          helper.getDoc(12),
+          helper.getDoc(13)
+        ])
+        expect(dbItems).toEqual([data3, data4])
+      })
+
+      it('deletes items', async () => {
+        const result = await dp.proc({
+          action: 'delete',
+          table: 'tests',
+          keys: [{ id: 10 }, { id: 11 }]
+        })
+        expect(result).toBeUndefined()
+
+        const dbItems = await Promise.all([
+          helper.getDoc(10),
+          helper.getDoc(11)
+        ])
+        expect(dbItems).toEqual([null, null])
+      })
+
+      it('deletes items as promise array', async () => {
+        const results = await Promise.all(dp.proc({
+          action: 'delete',
+          table: 'tests',
+          keys: [{ id: 12 }, { id: 13 }]
+        }, { useBatch: false }))
+        expect(results).toEqual([null, null])
+
+        const dbItems = await Promise.all([
+          helper.getDoc(12),
+          helper.getDoc(13)
+        ])
+        expect(dbItems).toEqual([null, null])
+      })
+    })
+  })
 
   describe('#createTable and #deleteTable', () => {
-    context('only HASH key without options', () => {
+    describe('only HASH key without options', () => {
       const TABLE_NAME = 'hash-table'
 
-      it('creates and deletes', () => {
+      it('creates and deletes', async () => {
         const ddb = new AWS.DynamoDB(helper.awsOpts);
 
-        return Promise.resolve()
-          .then(() => {
-            return dp.createTable(TABLE_NAME, { hashOnly: 'N' })
-          })
-          .then(() => {
-            return ddb.describeTable({ TableName: TABLE_NAME }).promise()
-          })
-          .then(({ Table }) => {
-            expect(Table.AttributeDefinitions[0].AttributeName).to.eq('hashOnly')
-            expect(Table.AttributeDefinitions[0].AttributeType).to.eq('N')
-            expect(Table.AttributeDefinitions.length).to.eq(1)
-            expect(Table.KeySchema[0].AttributeName).to.eq('hash')
-            expect(Table.KeySchema[0].KeyType).to.eq('HASH')
-            expect(Table.KeySchema.length).to.eq(1)
-            expect(Table.ProvisionedThroughput.ReadCapacityUnits).to.eq(5)
-            expect(Table.ProvisionedThroughput.WriteCapacityUnits).to.eq(5)
-          })
-          .catch(err => {
-            console.error(err)          
-          })
-          .then(() => {
-            return dp.deleteTable(TABLE_NAME)
-          })
+        await dp.createTable(TABLE_NAME, { hashOnly: 'N' })
+        const { Table } = await ddb.describeTable({ TableName: TABLE_NAME }).promise()
+
+        expect(Table.AttributeDefinitions[0].AttributeName).toEqual('hashOnly')
+        expect(Table.AttributeDefinitions[0].AttributeType).toEqual('N')
+        expect(Table.AttributeDefinitions.length).toEqual(1)
+        expect(Table.KeySchema[0].AttributeName).toEqual('hashOnly')
+        expect(Table.KeySchema[0].KeyType).toEqual('HASH')
+        expect(Table.KeySchema.length).toEqual(1)
+        expect(Table.ProvisionedThroughput.ReadCapacityUnits).toEqual(5)
+        expect(Table.ProvisionedThroughput.WriteCapacityUnits).toEqual(5)
+
+        await dp.deleteTable(TABLE_NAME)
       })
     })
 
-    context('HASH and RANGE keys with options', () => {
+    describe('HASH and RANGE keys with options', () => {
       const TABLE_NAME = 'hashrange-table'
 
-      it('creates and deletes', () => {
-        const ddb = new AWS.DynamoDB(helper.awsOpts);
+      it('creates and deletes', async () => {
+        const ddb = new AWS.DynamoDB(helper.awsOpts)
 
-        return Promise.resolve()
-          .then(() => {
-            return dp.createTable(TABLE_NAME, {
-              hash: 'S', range: 'N'
-            }, {
-              readCU: 11, writeCU: 12
-            })
-          })
-          .then(() => {
-            return ddb.describeTable({ TableName: TABLE_NAME }).promise()
-          })
-          .then(({ Table }) => {
-            expect(Table.AttributeDefinitions[0].AttributeName).to.eq('hash');
-            expect(Table.AttributeDefinitions[0].AttributeType).to.eq('S');
-            expect(Table.AttributeDefinitions[1].AttributeName).to.eq('range');
-            expect(Table.AttributeDefinitions[1].AttributeType).to.eq('N');
-            expect(Table.KeySchema[0].AttributeName).to.eq('hash');
-            expect(Table.KeySchema[0].KeyType).to.eq('HASH');
-            expect(Table.KeySchema[1].AttributeName).to.eq('range');
-            expect(Table.KeySchema[1].KeyType).to.eq('RANGE');
-            expect(Table.ProvisionedThroughput.ReadCapacityUnits).to.eq(11);
-            expect(Table.ProvisionedThroughput.WriteCapacityUnits).to.eq(12);
-          })
-          .catch(err => {
-            console.error(err)
-          })
-          .then(() => {
-            return dp.deleteTable(TABLE_NAME)
-          })
+        await dp.createTable(TABLE_NAME, {
+          hash: 'S', range: 'N'
+        }, {
+          readCU: 11, writeCU: 12
+        })
+
+        const { Table } = await ddb.describeTable({ TableName: TABLE_NAME }).promise()
+        expect(Table.AttributeDefinitions).toEqual([
+          {
+            AttributeName: 'hash',
+            AttributeType: 'S'
+          },
+          {
+            AttributeName: 'range',
+            AttributeType: 'N'
+          }
+        ])
+        expect(Table.KeySchema).toEqual([
+          {
+            AttributeName: 'hash',
+            KeyType: 'HASH'
+          },
+          {
+            AttributeName: 'range',
+            KeyType: 'RANGE'
+          }
+        ])
+        expect(Table.ProvisionedThroughput).toMatchObject({
+          ReadCapacityUnits: 11,
+          WriteCapacityUnits: 12,
+        })
+
+        await dp.deleteTable(TABLE_NAME)
       })
     })
 
-    context('create table with raw params', () => {
+    describe('create table with raw params', () => {
       const TABLE_NAME = 'hashrange-table'
       const createParams = {
         TableName: TABLE_NAME,
@@ -451,26 +427,15 @@ describe('DynamoProcessor', () => {
         }
       }
 
-      it('creates and deletes', () => {
-        const ddb = new AWS.DynamoDB(helper.awsOpts);
+      it('creates and deletes', async () => {
+        const ddb = new AWS.DynamoDB(helper.awsOpts)
+        await dp.createTable(createParams)
 
-        return Promise.resolve()
-          .then(() => {
-            return dp.createTable(createParams)
-          })
-          .then(() => {
-            return ddb.describeTable({ TableName: TABLE_NAME }).promise()
-          })
-          .then(({ Table }) => {
-            expect(Table).to.deep.includes(createParams)
-          })
-          .catch(err => {
-            console.error(err)
-          })
-          .then(() => {
-            return dp.deleteTable(TABLE_NAME)
-          })
+        const { Table } = await ddb.describeTable({ TableName: TABLE_NAME }).promise()
+        expect(Table).toMatchObject(createParams)
+
+        await dp.deleteTable(TABLE_NAME)
       })
     })
   })
-});
+})

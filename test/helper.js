@@ -14,17 +14,17 @@ const docClient = new AWS.DynamoDB.DocumentClient({ service: dynamodb });
 exports.awsOpts = awsOpts;
 exports.docClient = docClient;
 
-exports.getDoc = function(id) {
-  return docClient.get({
-          TableName: TABLE,
-          Key: { id }
-        }).promise()
-        .then(data => data.Item || null)
+exports.getDoc = async (id) => {
+  const data = await docClient.get({
+    TableName: TABLE,
+    Key: { id }
+  }).promise()
+  return data.Item || null
 }
 
-exports.putDoc = function(item) {
-  return docClient.put({
-          TableName: TABLE,
-          Item: item
-        }).promise()
+exports.putDoc = async (item) => {
+  await docClient.put({
+    TableName: TABLE,
+    Item: item
+  }).promise()
 }

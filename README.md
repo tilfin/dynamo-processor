@@ -103,6 +103,19 @@ dp.proc({
 });
 ```
 
+#### put(table, item)
+
+```js
+dp.put('users', {
+  id: 2,
+  name: 'Michael',
+  age: 25,
+  address: {
+    prefecture: 'Osaka'
+  }
+});
+```
+
 ### batchWriteItem (PutRequest)
 
 #### proc({ action: 'put', table, items })
@@ -130,7 +143,9 @@ dp.batchWrite('users', [
 ]);
 ```
 
-### updateItem (SET)
+### updateItem
+
+#### SET
 
 The space in a key is instead of the separator (`.`) between parent and child
 because a space is rarely used for a variable name.
@@ -157,7 +172,7 @@ dp.proc({
 });
 ```
 
-### updateItem (ADD)
+#### ADD
 
 ```js
 dp.proc({
@@ -179,7 +194,7 @@ dp.proc({
 });
 ```
 
-### updateItem (ADD to set)
+#### ADD to set
 
 `pushset` is adding to NumberSet or StringSet or BinarySet.
 
@@ -199,7 +214,7 @@ dp.proc({
 });
 ```
 
-### updateItem (REMOVE)
+#### REMOVE
 
 ```js
 dp.proc({
@@ -218,6 +233,41 @@ dp.proc({
   // { name: 'Taro',
   //   id: 3,
   //   address: {} }  age and address.prefecture was removed
+});
+```
+
+#### DELETE from set
+
+`delete` is removing from NumberSet or StringSet or BinarySet.
+
+```js
+dp.proc({
+  table: 'users',
+  action: 'update', // optional
+  key: {
+    id: 4
+  },
+  delete: {
+    cards: 20
+  }
+})
+.then((item) => {
+  console.log(item);
+});
+```
+
+#### update(table, keys, ope, [initFields])
+
+```js
+dp.update('users', {
+    id: 4
+  },
+  {
+    set: { name: 'foo' }
+  }
+})
+.then((item) => {
+  console.log(item);
 });
 ```
 
