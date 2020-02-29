@@ -1,6 +1,6 @@
 import { DynamoDB } from 'aws-sdk'
 
-import { Key, Item, OperationData, Operation, PutItem } from './types'
+import { Key, DocumentItem, OperationData, Operation, PutItem } from './types'
 import { Expression } from './expression'
 import { DocClient } from './doc_client'
 
@@ -25,7 +25,7 @@ const MSG_INVALID_EXPRESSION = 'The document path provided in the update express
 /**
  * DynamoProcessor
  */
-export class DynamoProcessor<T extends Item> {
+export class DynamoProcessor<T extends DocumentItem> {
   private log: any
   #wrapFunc: boolean
   #dynamodb: DynamoDB
@@ -361,7 +361,7 @@ export class DynamoProcessor<T extends Item> {
           return data.items.map((item) => this.put(table, item));
         }
       }
-    } else if (data.action === 'update' || data.set || data.add || data.remove || data.pushset) {
+    } else if (data.action === 'update' || data.set || data.add || data.remove || data.pushset || data.delete) {
       if (!data.key) {
         throw new Error('Key is not specified')
       }
@@ -370,7 +370,8 @@ export class DynamoProcessor<T extends Item> {
           set: data.set,
           add: data.add,
           remove: data.remove,
-          pushset: data.pushset
+          pushset: data.pushset,
+          delete: data.delete,
         }, opts.initFields);
 
     } else if (data.action === 'get' || data.key || data.keys) {

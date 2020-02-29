@@ -1,10 +1,10 @@
 import { DynamoDB } from 'aws-sdk'
-import { Key, Item, Operation } from './types'
+import { Key, DocumentItem, Operation } from './types'
 
 const cloneDeep = require('clone-deep')
 const docClient = new DynamoDB.DocumentClient()
 
-export class Expression<T extends Item> {
+export class Expression<T extends DocumentItem> {
   #inits!: Record<string, any>
   #sets!: string[]
   #adds!: string[]
@@ -42,6 +42,12 @@ export class Expression<T extends Item> {
     if (ope.remove) {
       for (let name of ope.remove) {
         this._addRemove(name as string)
+      }
+    }
+
+    if (ope.delete) {
+      for (let [name, val] of Object.entries(ope.delete)) {
+        this._addDelete(name, val)
       }
     }
 
@@ -113,8 +119,10 @@ export class Expression<T extends Item> {
   }
 
   _addDelete(name: string, val: any) {
+    const valSet = docClient.createSet(val);
+
     const path = this._regName(name);
-    const i = this._regVal(val);
+    const i = this._regVal(valSet);
     this.#deletes.push(`${path} :v${i}`);
   }
 
@@ -178,6 +186,10 @@ export class Expression<T extends Item> {
 
     if (this.#removes.length) {
       exp.push('REMOVE ' + this.#removes.join(', '))
+    }
+
+    if (this.#deletes.length) {
+      exp.push('DELETE ' + this.#deletes.join(', '))
     }
 
     return exp.join(' ')

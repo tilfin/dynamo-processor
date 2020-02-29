@@ -80,6 +80,23 @@ describe('DynamoProcessor', () => {
       expect(item).toEqual(data)
     })
 
+    it('updates an item with delete', async () => {
+      const item = await dp.proc({
+        table: 'tests',
+        key: { id: 2 },
+        delete: {
+          tags: 'abc',
+          numset: 20,
+        }
+      })
+      expect(item).toMatchObject({
+        name: 'Taro',
+        age: 16,
+        tags: new Set(['def']),
+        numset: new Set([10, 30]),
+      })
+    })
+
     it('deletes an item', async () => {
       const res = await dp.proc({
         action: 'delete',
