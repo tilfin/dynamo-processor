@@ -1,14 +1,9 @@
 const AWS = require('aws-sdk');
 const _ =  require('lodash');
-const chai = require('chai');
-const expect = chai.expect;
-const assert = chai.assert;
+const { expect } = require('chai');
 const helper = require('./helper');
-
-const opts = _.cloneDeep(helper.awsOpts);
-opts.wrapFunc = true;
-
-const dp = require('../')(opts);
+const DynamoProcessor = require('../lib')
+const dp = new DynamoProcessor({ wrapFunc: true, ...helper.awsOpts });
 
 describe('DynamoProcessor with wrapFunc = true', () => {
   before(() => {
@@ -95,7 +90,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           delete data.weight;
           expect(item).to.deep.equal(data);
         });
-    });
+    })
 
     context('with initFields', () => {
       it('updates an item with initial fields', () => {
@@ -128,7 +123,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
             });
           });
       })
-    });
+    })
 
     context('multiple items', () => {
       const data1 = { id: 10, name: 'Karen' };
@@ -202,7 +197,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           .then(dbItem => {
             expect(dbItem).to.deep.equal(data4);
           });
-      });
-    });
-  });
-});
+      })
+    })
+  })
+})

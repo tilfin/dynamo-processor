@@ -1,8 +1,0 @@
-coverage
-example
-test
-.gitignore
-.travis.yml
-.nyc_output
-Makefile
-docker-compose.yml

@@ -1,11 +1,10 @@
 const AWS = require('aws-sdk');
 const _ =  require('lodash');
-const chai = require('chai');
-const expect = chai.expect;
-const assert = chai.assert;
+const { expect } = require('chai');
 const helper = require('./helper');
 
-const dp = require('../')(helper.awsOpts);
+const DynamoProcessor = require('../lib')
+const dp = new DynamoProcessor({ ...helper.awsOpts });
 
 describe('DynamoProcessor', () => {
   before(() => {
@@ -144,92 +143,92 @@ describe('DynamoProcessor', () => {
     });
 
     context('with initFields contain a field has value', () => {
-      it('updates an item with initial and the field was not overwritten', () => {
+      before(() => {
         return helper.putDoc({
-            id: 5,
-            str: 'something'
-          })
-          .then(data => {
-            return dp.proc({
-                table: 'tests',
-                key: { id: 5 },
-                set: {
-                  'map1 bar': 'abc'
-                }
-              }, {
-                initFields: {
-                  str: null, map1: {}, map2: {}
-                }
-              })
-          })
-          .then((item) => {
-            expect(item).to.deep.equal({
-              id: 5,
-              str: 'something',
-              map1: {
-                bar: 'abc'
-              },
-              map2: {}
-            });
-          });
-      });
-    });
+          id: 5,
+          str: 'something'
+        })
+      })
+
+      it('updates an item with initial and the field was not overwritten', async () => {
+        const item = await dp.proc({
+          table: 'tests',
+          key: { id: 5 },
+          set: {
+            'map1 bar': 'abc'
+          }
+        }, {
+          initFields: {
+            str: null, map1: {}, map2: {}
+          }
+        })
+
+        expect(item).to.deep.equal({
+          id: 5,
+          str: 'something',
+          map1: {
+            bar: 'abc'
+          },
+          map2: {}
+        })
+      })
+    })
 
     context('concurrent update with initFields', () => {
-      it('updates an item avoiding conflicts', () => {
+      before(() => {
+        return helper.putDoc({
+          id: 6,
+          str: 'something'
+        })
+      })
+
+      it('updates an item avoiding conflicts', async () => {
         const initFields = {
           str: null, map1: {}, map2: {}, map3: {}
         };
 
-        return helper.putDoc({
-            id: 6,
-            str: 'something'
-          })
-          .then(data => {
-            return Promise.all([
-                dp.proc({
-                  table: 'tests',
-                  key: { id: 6 },
-                  set: {
-                    'map1 left': true
-                  }
-                }, { initFields }),
-                dp.proc({
-                  table: 'tests',
-                  key: { id: 6 },
-                  set: {
-                    'map2 right': 'string'
-                  }
-                }, { initFields }),
-                dp.proc({
-                  table: 'tests',
-                  key: { id: 6 },
-                  set: {
-                    'map3 center': 123
-                  }
-                }, { initFields })
-              ])
-          })
-          .then(results => {
-            return helper.getDoc(6);
-          })
-          .then(item => {
-            expect(item).to.deep.equal({
-              id: 6,
-              str: 'something',
-              map1: {
-                left: true
-              },
-              map2: {
-                right: 'string'
-              },
-              map3: {
-                center: 123
-              }
-            });
-          });
-      });
-    });
+        await Promise.all([
+          dp.proc({
+            table: 'tests',
+            key: { id: 6 },
+            set: {
+              'map1 left': true
+            }
+          }, { initFields }),
+          dp.proc({
+            table: 'tests',
+            key: { id: 6 },
+            set: {
+              'map2 right': 'string'
+            }
+          }, { initFields }),
+          dp.proc({
+            table: 'tests',
+            key: { id: 6 },
+            set: {
+              'map3 center': 123
+            }
+          }, { initFields })
+        ])
+
+        const item = await helper.getDoc(6);
+
+        expect(item).to.deep.equal({
+          id: 6,
+          str: 'something',
+          map1: {
+            left: true
+          },
+          map2: {
+            right: 'string'
+          },
+          map3: {
+            center: 123
+          }
+        });
+        })
+      })
+    })
 
     context('multiple items', () => {
       const data1 = { id: 10, name: 'Karen' };
@@ -265,22 +264,19 @@ describe('DynamoProcessor', () => {
           });
       });
 
-      it('puts items', () => {
-        return dp.proc({
-            table: 'tests',
-            items: [data3, data4]
-          })
-          .then(result => {
-            expect(result).to.be.undefined;
-            return Promise.all([
-              helper.getDoc(12),
-              helper.getDoc(13)
-            ])
-          })
-          .then(dbItems => {
-            expect(dbItems).to.deep.equal([data3, data4]);
-          });
-      });
+      it('puts items', async () => {
+        const result = await dp.proc({
+          table: 'tests',
+          items: [data3, data4]
+        })
+        expect(result).to.be.empty;
+
+        const dbItems = await Promise.all([
+          helper.getDoc(12),
+          helper.getDoc(13)
+        ])
+        expect(dbItems).to.deep.equal([data3, data4])
+      })
 
       it('puts items as promise array', () => {
         return Promise.all(dp.proc({

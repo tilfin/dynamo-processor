@@ -1,11 +1,15 @@
 {
   "name": "dynamo-processor",
-  "version": "0.11.1",
+  "version": "2.0.0",
   "description": "DynamoDB operation processor for Node.js",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
   "scripts": {
-    "test": "mocha",
+    "build": "tsc",
+    "test": "mocha 'test/**.js'",
     "coverage": "nyc npm test"
   },
   "repository": {
@@ -31,9 +35,13 @@
     "coveralls": "^3.0.2",
     "lodash": "^4.17.11",
     "mocha": "^6.1.4",
-    "nyc": "^15.0.0"
+    "nyc": "^15.0.0",
+    "typescript": "^3.8.3"
   },
   "engines": {
     "node": ">=10"
+  },
+  "dependencies": {
+    "clone-deep": "^4.0.1"
   }
 }
