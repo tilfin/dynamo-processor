@@ -322,41 +322,27 @@ describe('DynamoProcessor', () => {
     describe('only HASH key without options', () => {
       const TABLE_NAME = 'hash-table'
 
-      it('creates and deletes', () => {
+      it('creates and deletes', async () => {
         const ddb = new AWS.DynamoDB(helper.awsOpts);
 
-        return Promise.resolve()
-          .then(() => {
-            return dp.createTable(TABLE_NAME, { hashOnly: 'N' })
-          })
-          .then(() => {
-            return ddb.describeTable({ TableName: TABLE_NAME }).promise()
-          })
-          .then(({ Table }) => {
-            expect(Table.AttributeDefinitions[0].AttributeName).toEqual('hashOnly')
-            expect(Table.AttributeDefinitions[0].AttributeType).toEqual('N')
-            expect(Table.AttributeDefinitions.length).toEqual(1)
-            expect(Table.KeySchema[0].AttributeName).toEqual('hashOnly')
-            expect(Table.KeySchema[0].KeyType).toEqual('HASH')
-            expect(Table.KeySchema.length).toEqual(1)
-            expect(Table.ProvisionedThroughput.ReadCapacityUnits).toEqual(5)
-            expect(Table.ProvisionedThroughput.WriteCapacityUnits).toEqual(5)
-          })
-          .catch(err => {
-            console.error(err)          
-          })
-          .then(() => {
-            return dp.deleteTable(TABLE_NAME)
-          })
+        await dp.createTable(TABLE_NAME, { hashOnly: 'N' })
+        const { Table } = await ddb.describeTable({ TableName: TABLE_NAME }).promise()
+
+        expect(Table.AttributeDefinitions[0].AttributeName).toEqual('hashOnly')
+        expect(Table.AttributeDefinitions[0].AttributeType).toEqual('N')
+        expect(Table.AttributeDefinitions.length).toEqual(1)
+        expect(Table.KeySchema[0].AttributeName).toEqual('hashOnly')
+        expect(Table.KeySchema[0].KeyType).toEqual('HASH')
+        expect(Table.KeySchema.length).toEqual(1)
+        expect(Table.ProvisionedThroughput.ReadCapacityUnits).toEqual(5)
+        expect(Table.ProvisionedThroughput.WriteCapacityUnits).toEqual(5)
+
+        await dp.deleteTable(TABLE_NAME)
       })
     })
 
     describe('HASH and RANGE keys with options', () => {
       const TABLE_NAME = 'hashrange-table'
-
-      beforeEach(() => {
-        return dp.deleteTable(TABLE_NAME)
-      })
 
       it('creates and deletes', async () => {
         const ddb = new AWS.DynamoDB(helper.awsOpts)
@@ -392,6 +378,8 @@ describe('DynamoProcessor', () => {
           ReadCapacityUnits: 11,
           WriteCapacityUnits: 12,
         })
+
+        await dp.deleteTable(TABLE_NAME)
       })
     })
 
@@ -439,15 +427,14 @@ describe('DynamoProcessor', () => {
         }
       }
 
-      beforeEach(() => {
-        return dp.deleteTable(TABLE_NAME)
-      })
-
       it('creates and deletes', async () => {
         const ddb = new AWS.DynamoDB(helper.awsOpts)
         await dp.createTable(createParams)
+
         const { Table } = await ddb.describeTable({ TableName: TABLE_NAME }).promise()
         expect(Table).toMatchObject(createParams)
+
+        await dp.deleteTable(TABLE_NAME)
       })
     })
   })
