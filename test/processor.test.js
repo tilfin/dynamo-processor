@@ -1,9 +1,8 @@
 const AWS = require('aws-sdk');
 const _ =  require('lodash');
 const helper = require('./helper');
-
-const DynamoProcessor = require('../lib')
-const dp = new DynamoProcessor({ ...helper.awsOpts });
+const DP = require('../lib')
+const dp = DP({ ...helper.awsOpts });
 
 describe('DynamoProcessor', () => {
   beforeAll(() => {

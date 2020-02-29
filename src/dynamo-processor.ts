@@ -25,7 +25,7 @@ const MSG_INVALID_EXPRESSION = 'The document path provided in the update express
 /**
  * DynamoProcessor
  */
-export class Processor<T extends Item> {
+export class DynamoProcessor<T extends Item> {
   private log: any
   #wrapFunc: boolean
   #dynamodb: DynamoDB

@@ -1,3 +1,6 @@
-import { Processor } from './processor'
+import { DynamoProcessor } from './dynamo-processor'
 
-export = Processor
+const DP = (opts: any) => new DynamoProcessor(opts)
+DP.DynamoProcessor = DynamoProcessor
+
+export = DP
