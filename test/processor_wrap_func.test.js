@@ -1,16 +1,15 @@
 const AWS = require('aws-sdk');
 const _ =  require('lodash');
-const { expect } = require('chai');
 const helper = require('./helper');
 const DynamoProcessor = require('../lib')
 const dp = new DynamoProcessor({ wrapFunc: true, ...helper.awsOpts });
 
 describe('DynamoProcessor with wrapFunc = true', () => {
-  before(() => {
+  beforeAll(() => {
     return dp.createTable('tests', { id: 'N' })
   })
 
-  after(() => {
+  afterAll(() => {
     return dp.deleteTable('tests')
   })
 
@@ -22,7 +21,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
       weight: 55.3
     };
 
-    before(() => {
+    beforeEach(() => {
       return helper.putDoc(data);
     });
 
@@ -32,7 +31,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           key: { id: 1 }
         })()
         .then((item) => {
-          expect(item).to.deep.equal(data);
+          expect(item).toEqual(data);
         });
 
     });
@@ -43,7 +42,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           key: { id: -1 }
         })()
         .then((item) => {
-          expect(item).to.be.null;
+          expect(item).toBeNull();
         });
     });
 
@@ -57,7 +56,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           return helper.getDoc(2);
         })
         .then((dbItem) => {
-          expect(dbItem).to.deep.equal(data);
+          expect(dbItem).toEqual(data);
         });
     });
 
@@ -73,7 +72,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           return helper.getDoc(3);
         })
         .then((dbItem) => {
-          expect(dbItem).to.deep.equal({
+          expect(dbItem).toEqual({
               id: 3, name: 'Ken', age: 10,
               cards: helper.docClient.createSet([1, 2])
             });
@@ -88,11 +87,11 @@ describe('DynamoProcessor with wrapFunc = true', () => {
         })()
         .then((item) => {
           delete data.weight;
-          expect(item).to.deep.equal(data);
+          expect(item).toEqual(data);
         });
     })
 
-    context('with initFields', () => {
+    describe('with initFields', () => {
       it('updates an item with initial fields', () => {
         return dp.proc({
             table: 'tests',
@@ -112,7 +111,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
             }
           })()
           .then((item) => {
-            expect(item).to.deep.equal({
+            expect(item).toEqual({
               id: 4,
               list: [],
               map1: { foo: 1 },
@@ -125,13 +124,13 @@ describe('DynamoProcessor with wrapFunc = true', () => {
       })
     })
 
-    context('multiple items', () => {
+    describe('multiple items', () => {
       const data1 = { id: 10, name: 'Karen' };
       const data2 = { id: 11, name: 'Hana' };
       const data3 = { id: 12, name: 'Nancy' };
       const data4 = { id: 13, name: 'Jiro' };
 
-      before(() => {
+      beforeEach(() => {
         return Promise.all([
           helper.putDoc(data1),
           helper.putDoc(data2),
@@ -145,7 +144,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           })()
           .then(items => {
             expect(_.sortBy(items, 'id'))
-            .to.deep.equal(_.sortBy([data1, data2], 'id'));
+            .toEqual(_.sortBy([data1, data2], 'id'));
           });
       });
 
@@ -158,7 +157,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
 
         return Promise.all(promises)
           .then((items) => {
-            expect(items).to.deep.equal([data1, data2]);
+            expect(items).toEqual([data1, data2]);
           });
       });
 
@@ -171,11 +170,11 @@ describe('DynamoProcessor with wrapFunc = true', () => {
             return helper.getDoc(12);
           })
           .then(dbItem => {
-            expect(dbItem).to.deep.equal(data3);
+            expect(dbItem).toEqual(data3);
             return helper.getDoc(13);
           })
           .then(dbItem => {
-            expect(dbItem).to.deep.equal(data4);
+            expect(dbItem).toEqual(data4);
           });
       });
 
@@ -191,11 +190,11 @@ describe('DynamoProcessor with wrapFunc = true', () => {
             return helper.getDoc(12);
           })
           .then(dbItem => {
-            expect(dbItem).to.deep.equal(data3);
+            expect(dbItem).toEqual(data3);
             return helper.getDoc(13);
           })
           .then(dbItem => {
-            expect(dbItem).to.deep.equal(data4);
+            expect(dbItem).toEqual(data4);
           });
       })
     })

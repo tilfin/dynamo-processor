@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "mocha 'test/**.js'",
+    "test": "jest 'test/*.js'",
     "coverage": "nyc npm test"
   },
   "repository": {
@@ -31,10 +31,9 @@
   },
   "devDependencies": {
     "aws-sdk": "2.x",
-    "chai": "^4.2.0",
     "coveralls": "^3.0.2",
+    "jest": "^25.1.0",
     "lodash": "^4.17.11",
-    "mocha": "^6.1.4",
     "nyc": "^15.0.0",
     "typescript": "^3.8.3"
   },
