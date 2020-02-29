@@ -1,8 +1,8 @@
-const AWS = require('aws-sdk');
-const _ =  require('lodash');
-const helper = require('./helper');
+const AWS = require('aws-sdk')
+const _ =  require('lodash')
+const helper = require('./helper')
 const DP = require('../lib')
-const dp = DP({ ...helper.awsOpts });
+const dp = DP({ ...helper.awsOpts })
 
 describe('DynamoProcessor', () => {
   beforeAll(() => {
@@ -247,7 +247,7 @@ describe('DynamoProcessor', () => {
           table: 'tests',
           items: [data3, data4]
         })
-        expect(result).toEqual([]);
+        expect(result).toEqual([])
 
         const dbItems = await Promise.all([
           helper.getDoc(12),
@@ -337,38 +337,44 @@ describe('DynamoProcessor', () => {
     describe('HASH and RANGE keys with options', () => {
       const TABLE_NAME = 'hashrange-table'
 
-      it('creates and deletes', () => {
-        const ddb = new AWS.DynamoDB(helper.awsOpts);
+      beforeEach(() => {
+        return dp.deleteTable(TABLE_NAME)
+      })
 
-        return Promise.resolve()
-          .then(() => {
-            return dp.createTable(TABLE_NAME, {
-              hash: 'S', range: 'N'
-            }, {
-              readCU: 11, writeCU: 12
-            })
-          })
-          .then(() => {
-            return ddb.describeTable({ TableName: TABLE_NAME }).promise()
-          })
-          .then(({ Table }) => {
-            expect(Table.AttributeDefinitions[0].AttributeName).toEqual('hash');
-            expect(Table.AttributeDefinitions[0].AttributeType).toEqual('S');
-            expect(Table.AttributeDefinitions[1].AttributeName).toEqual('range');
-            expect(Table.AttributeDefinitions[1].AttributeType).toEqual('N');
-            expect(Table.KeySchema[0].AttributeName).toEqual('hash');
-            expect(Table.KeySchema[0].KeyType).toEqual('HASH');
-            expect(Table.KeySchema[1].AttributeName).toEqual('range');
-            expect(Table.KeySchema[1].KeyType).toEqual('RANGE');
-            expect(Table.ProvisionedThroughput.ReadCapacityUnits).toEqual(11);
-            expect(Table.ProvisionedThroughput.WriteCapacityUnits).toEqual(12);
-          })
-          .catch(err => {
-            console.error(err)
-          })
-          .then(() => {
-            return dp.deleteTable(TABLE_NAME)
-          })
+      it('creates and deletes', async () => {
+        const ddb = new AWS.DynamoDB(helper.awsOpts)
+
+        await dp.createTable(TABLE_NAME, {
+          hash: 'S', range: 'N'
+        }, {
+          readCU: 11, writeCU: 12
+        })
+
+        const { Table } = await ddb.describeTable({ TableName: TABLE_NAME }).promise()
+        expect(Table.AttributeDefinitions).toEqual([
+          {
+            AttributeName: 'hash',
+            AttributeType: 'S'
+          },
+          {
+            AttributeName: 'range',
+            AttributeType: 'N'
+          }
+        ])
+        expect(Table.KeySchema).toEqual([
+          {
+            AttributeName: 'hash',
+            KeyType: 'HASH'
+          },
+          {
+            AttributeName: 'range',
+            KeyType: 'RANGE'
+          }
+        ])
+        expect(Table.ProvisionedThroughput).toMatchObject({
+          ReadCapacityUnits: 11,
+          WriteCapacityUnits: 12,
+        })
       })
     })
 
@@ -416,25 +422,15 @@ describe('DynamoProcessor', () => {
         }
       }
 
-      it('creates and deletes', () => {
-        const ddb = new AWS.DynamoDB(helper.awsOpts);
+      beforeEach(() => {
+        return dp.deleteTable(TABLE_NAME)
+      })
 
-        return Promise.resolve()
-          .then(() => {
-            return dp.createTable(createParams)
-          })
-          .then(() => {
-            return ddb.describeTable({ TableName: TABLE_NAME }).promise()
-          })
-          .then(({ Table }) => {
-            expect(Table).toMatchObject(createParams)
-          })
-          .catch(err => {
-            console.error(err)
-          })
-          .then(() => {
-            return dp.deleteTable(TABLE_NAME)
-          })
+      it('creates and deletes', async () => {
+        const ddb = new AWS.DynamoDB(helper.awsOpts)
+        await dp.createTable(createParams)
+        const { Table } = await ddb.describeTable({ TableName: TABLE_NAME }).promise()
+        expect(Table).toMatchObject(createParams)
       })
     })
   })
