@@ -230,7 +230,7 @@ export class DynamoProcessor<T extends DocumentItem> {
    * @param  {object} ope - Operations
    * @param  {object} initFields - Initial fields
    */
-  update(table: string, key: Key<T>, ope: Operation<T>, initFields?: Partial<T>): Promise<(Partial<T> | null)[]>
+  update(table: string, key: Key<T>, ope: Operation<T>, initFields?: Partial<T>): Promise<T>
   update(table: string, key: Key<T>, ope: Operation<T>, initFields?: Partial<T>): Function
   update(table: string, key: Key<T>, ope: Operation<T>, initFields?: Partial<T>): any {
     const exp = new Expression(initFields || {});
