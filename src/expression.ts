@@ -57,7 +57,7 @@ export class Expression<T extends DocumentItem> {
 
     const result: DynamoDB.UpdateItemInput = {
       TableName: table,
-      Key: key,
+      Key: key as DynamoDB.Key,
       UpdateExpression: this.toExpression(),
       ExpressionAttributeNames: this.#attrNames,
       ReturnValues: 'ALL_NEW'

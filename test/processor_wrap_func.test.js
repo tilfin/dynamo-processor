@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk')
 const _ =  require('lodash')
 const helper = require('./helper')
-const { DynamoProcessor } = require('../lib')
+const DynamoProcessor = require('../lib')
 const dp = new DynamoProcessor({ wrapFunc: true, ...helper.awsOpts })
 
 describe('DynamoProcessor with wrapFunc = true', () => {
