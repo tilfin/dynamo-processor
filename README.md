@@ -23,10 +23,11 @@ $ npm install -save dynamo-processor
 ## How to Use
 
 ```
-const dp = require('dynamo-processor')({ region: 'ap-northeast-1' });
+const DynamoProcessor = require('dynamo-processor')
+const dp = new DynamoProcessor({ region: 'ap-northeast-1' });
 ```
 
-`require('dynamo-processor')(options)`
+`new DynamoProcessor(options)`
 
 * **options** `<Object>` AWS Config options as well
   * **wrapFunc** `<Boolean>` If this is true, proc method returns a _Function_ that wraps the _Promise_ in case that promise evaluation need lazy. (default is false)
