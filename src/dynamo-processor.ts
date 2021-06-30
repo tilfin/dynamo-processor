@@ -1,4 +1,5 @@
-import { DynamoDB } from 'aws-sdk'
+import { CreateTableCommandInput, DynamoDB, DynamoDBClient, DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
+import { BatchGetCommandInput, DeleteCommandInput, DynamoDBDocumentClient, GetCommandInput, PutCommandInput } from '@aws-sdk/lib-dynamodb'
 
 import { Key, DocumentItem, OperationData, Operation, PutItem } from './types'
 import { Expression } from './expression'
@@ -29,19 +30,19 @@ export class DynamoProcessor<T extends DocumentItem> {
   private log: any
   #wrapFunc: boolean
   #dynamodb: DynamoDB
-  #documentClient: DynamoDB.DocumentClient
+  #documentClient: DynamoDBDocumentClient
   #docClient: DocClient
 
-  constructor(opts: Options & DynamoDB.Types.ClientConfiguration) {
+  constructor(opts: Options & DynamoDBClientConfig) {
     this.log = opts.log || (() => {})
-    delete opts.logger;
+    delete opts.log;
 
     this.#wrapFunc = opts.wrapFunc || false;
     delete opts.wrapFunc;
 
-    const awsOpts = opts || {};
-    this.#dynamodb = new DynamoDB(awsOpts);
-    this.#documentClient = new DynamoDB.DocumentClient(awsOpts)
+    const ddbOpts = opts || {};
+    this.#dynamodb = new DynamoDB(ddbOpts);
+    this.#documentClient = DynamoDBDocumentClient.from(new DynamoDBClient(ddbOpts))
     this.#docClient = new DocClient(this.#documentClient)
   }
 
@@ -53,7 +54,7 @@ export class DynamoProcessor<T extends DocumentItem> {
   get(table: string, key: Key<T>): Promise<T | null>
   get(table: string, key: Key<T>): Function
   get(table: string, key: Key<T>): any {
-    const params: DynamoDB.DocumentClient.GetItemInput = {
+    const params: GetCommandInput = {
       TableName: table,
       Key: key
     };
@@ -82,7 +83,7 @@ export class DynamoProcessor<T extends DocumentItem> {
   batchGet(table: string, keys: Key<T>[]): Promise<T[]>
   batchGet(table: string, keys: Key<T>[]): Function
   batchGet(table: string, keys: Key<T>[]): any {
-    const params: DynamoDB.DocumentClient.BatchGetItemInput = {
+    const params: BatchGetCommandInput = {
       RequestItems: {
         [table]: {
           Keys: keys
@@ -113,7 +114,7 @@ export class DynamoProcessor<T extends DocumentItem> {
   put(table: string, item: PutItem<T>): Promise<T>
   put(table: string, item: PutItem<T>): Function
   put(table: string, item: PutItem<T>): any {
-    const params: DynamoDB.DocumentClient.PutItemInput = {
+    const params: PutCommandInput = {
       TableName: table,
       Item: item
     };
@@ -137,7 +138,7 @@ export class DynamoProcessor<T extends DocumentItem> {
   delete(table: string, key: Key<T>): Promise<null>
   delete(table: string, key: Key<T>): Function
   delete(table: string, key: Key<T>): any {
-    const params: DynamoDB.DocumentClient.DeleteItemInput = {
+    const params: DeleteCommandInput = {
       TableName: table,
       Key: key
     };
@@ -244,7 +245,7 @@ export class DynamoProcessor<T extends DocumentItem> {
           return data;
         })
         .catch(err => {
-          if (initFields && err.code === 'ValidationException' && err.message === MSG_INVALID_EXPRESSION) {
+          if (initFields && err.name === 'ValidationException' && err.message === MSG_INVALID_EXPRESSION) {
             this.log({ level: 'warn', table, itemKey }, 'Failed to update item because some fields not initialized');
 
             const paramsWithInit = exp.generate(table, key, ope, true);
@@ -254,7 +255,7 @@ export class DynamoProcessor<T extends DocumentItem> {
                 return data;
               })
               .catch(err => {
-                if (err.code === 'ConditionalCheckFailedException') {
+                if (err.name === 'ConditionalCheckFailedException') {
                   // An another client has already set them same attributes.
                   // Try to update it at first again because attributes were initialized.
                   this.log({ level: 'warn', table, itemKey }, 'Failed to update item with initial fields because of conflict');
@@ -278,12 +279,12 @@ export class DynamoProcessor<T extends DocumentItem> {
   }
 
   /**
-   * Create a set (This is wrapper for DocumentClient#createSet)
+   * Create a set from array
    * @param  {array} list - values
    * @return number set, string set or binary set
    */
-  createSet(list: any[]) {
-    return this.#documentClient.createSet(list)
+  createSet(array: any[]) {
+    return new Set(array)
   }
 
   /**
@@ -293,8 +294,8 @@ export class DynamoProcessor<T extends DocumentItem> {
    * @param  {Integer} opts.readCU - Read capacity unit (default: 5)
    * @param  {Integer} opts.writeCU - Write capacity unit (default: 5)
    */
-  async createTable(table: string | DynamoDB.CreateTableInput, keySet: Record<string, any>, opts: { readCU?: number; writeCU?: number } = {}) {
-    let params: DynamoDB.CreateTableInput;
+  async createTable(table: string | CreateTableCommandInput, keySet: Record<string, any>, opts: { readCU?: number; writeCU?: number } = {}) {
+    let params: CreateTableCommandInput;
     if (typeof table === 'string') {
       const attrDefs = [], keySchema = [], keyTypes = ['HASH', 'RANGE'];
       for (let [name, type] of Object.entries(keySet)) {
@@ -317,7 +318,7 @@ export class DynamoProcessor<T extends DocumentItem> {
       params = table
     }
 
-    const data = await this.#dynamodb.createTable(params).promise()
+    const data = await this.#dynamodb.createTable(params)
     this.log({ level: 'info', table }, 'Created table');
     return data;
   }
@@ -329,7 +330,7 @@ export class DynamoProcessor<T extends DocumentItem> {
   async deleteTable(table: string) {
     const params = { TableName: table };
 
-    const data = await this.#dynamodb.deleteTable(params).promise()
+    const data = await this.#dynamodb.deleteTable(params)
     this.log({ level: 'info', table }, 'Deleted table');
     return data;
   }

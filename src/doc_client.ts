@@ -1,32 +1,32 @@
-import { DynamoDB } from 'aws-sdk'
+import { BatchGetCommand, BatchGetCommandInput, BatchWriteCommand, BatchWriteCommandInput, DeleteCommand, DeleteCommandInput, DynamoDBDocumentClient, GetCommand, GetCommandInput, PutCommand, PutCommandInput, PutCommandOutput, UpdateCommand, UpdateCommandInput } from '@aws-sdk/lib-dynamodb'
 
 export class DocClient {
-  constructor(private client: DynamoDB.DocumentClient) {}
+  constructor(private client: DynamoDBDocumentClient) {}
 
-  get(params: DynamoDB.DocumentClient.GetItemInput) {
-    return this.client.get(params).promise()
+  get(params: GetCommandInput) {
+    return this.client.send(new GetCommand(params))
   }
 
-  batchGet(params: DynamoDB.DocumentClient.BatchGetItemInput) {
-    return this.client.batchGet(params).promise()
+  batchGet(params: BatchGetCommandInput) {
+    return this.client.send(new BatchGetCommand(params))
   }
 
-  put(params: DynamoDB.DocumentClient.PutItemInput) {
-    return this.client.put(params).promise()
+  put(params: PutCommandInput) {
+    return this.client.send(new PutCommand(params))
   }
 
-  update(params: DynamoDB.DocumentClient.UpdateItemInput) {
-    return this.client.update(params).promise()
+  update(params: UpdateCommandInput) {
+    return this.client.send(new UpdateCommand(params))
       .then(data => data.Attributes)
   }
 
-  delete(params: DynamoDB.DocumentClient.DeleteItemInput) {
-    return this.client.delete(params).promise()
+  delete(params: DeleteCommandInput) {
+    return this.client.send(new DeleteCommand(params))
       .then(data => null)
   }
 
-  batchWrite(params: DynamoDB.DocumentClient.BatchWriteItemInput) {
-    return this.client.batchWrite(params).promise()
+  batchWrite(params: BatchWriteCommandInput) {
+    return this.client.send(new BatchWriteCommand(params))
       .then(data => data.UnprocessedItems)
   }
 }

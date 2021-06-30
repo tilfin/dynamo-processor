@@ -1,8 +1,8 @@
-import { DynamoDB } from 'aws-sdk'
+import { AttributeValue } from '@aws-sdk/client-dynamodb'
+import { UpdateCommandInput } from '@aws-sdk/lib-dynamodb'
 import { Key, DocumentItem, Operation } from './types'
 
 const cloneDeep = require('clone-deep')
-const docClient = new DynamoDB.DocumentClient()
 
 export class Expression<T extends DocumentItem> {
   #inits!: Record<string, any>
@@ -18,7 +18,7 @@ export class Expression<T extends DocumentItem> {
 
   constructor(private initFields: Partial<T>) {}
 
-  generate(table: string, key: Key<T>, ope: Operation<T>, withInit = false): DynamoDB.DocumentClient.UpdateItemInput {
+  generate(table: string, key: Key<T>, ope: Operation<T>, withInit = false): UpdateCommandInput {
     this._reset();
 
     if (ope.set) {
@@ -55,9 +55,9 @@ export class Expression<T extends DocumentItem> {
       this._geneInits()
     }
 
-    const result: DynamoDB.UpdateItemInput = {
+    const result: UpdateCommandInput = {
       TableName: table,
-      Key: key as DynamoDB.Key,
+      Key: key as { [key: string]: AttributeValue },
       UpdateExpression: this.toExpression(),
       ExpressionAttributeNames: this.#attrNames,
       ReturnValues: 'ALL_NEW'
@@ -104,7 +104,7 @@ export class Expression<T extends DocumentItem> {
   }
 
   _addPushSet(name: string, val: any, init: boolean) {
-    const valSet = docClient.createSet(val);
+    const valSet = this.createSet(val);
 
     if (!init || !this._addInitSet(name, valSet)) {
       const path = this._regName(name);
@@ -119,7 +119,7 @@ export class Expression<T extends DocumentItem> {
   }
 
   _addDelete(name: string, val: any) {
-    const valSet = docClient.createSet(val);
+    const valSet = this.createSet(val);
 
     const path = this._regName(name);
     const i = this._regVal(valSet);
@@ -199,5 +199,9 @@ export class Expression<T extends DocumentItem> {
     if (value == null) return true;
     if (typeof value === 'object') return !Object.keys(value).length
     return false
+  }
+
+  private createSet(val: any) {
+    return new Set([].concat(val))
   }
 }

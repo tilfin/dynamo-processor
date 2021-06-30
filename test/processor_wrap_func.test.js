@@ -1,8 +1,7 @@
-const AWS = require('aws-sdk')
 const _ =  require('lodash')
 const helper = require('./helper')
 const DynamoProcessor = require('../lib')
-const dp = new DynamoProcessor({ wrapFunc: true, ...helper.awsOpts })
+const dp = new DynamoProcessor({ wrapFunc: true, ...helper.ddbOpts })
 
 describe('DynamoProcessor with wrapFunc = true', () => {
   beforeAll(() => {
@@ -64,7 +63,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
       const dbItem = await helper.getDoc(3)
       expect(dbItem).toEqual({
         id: 3, name: 'Ken', age: 10,
-        cards: helper.docClient.createSet([1, 2])
+        cards: new Set([1, 2])
       })
     })
 
@@ -103,7 +102,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           list: [],
           map1: { foo: 1 },
           map2: {
-            bar: helper.docClient.createSet(['a']),
+            bar: new Set(['a']),
             size: 3
           }
         })
