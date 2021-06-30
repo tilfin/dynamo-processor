@@ -6,4 +6,4 @@ services:
     environment:
       SERVICES: dynamodb
     ports:
-      - 8000:4569
+      - 8000:4566

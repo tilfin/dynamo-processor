@@ -3,7 +3,7 @@ dynamo-processor
 
 [![NPM Version][npm-image]][npm-url]
 [![Node](https://img.shields.io/node/v/dynamo-processor.svg)]()
-[![Build Status](https://travis-ci.org/tilfin/dynamo-processor.svg?branch=master)](https://travis-ci.org/tilfin/dynamo-processor)
+[![CI](https://github.com/tilfin/dynamo-processor/actions/workflows/nodejs.yml/badge.svg)](https://github.com/tilfin/dynamo-processor/actions/workflows/nodejs.yml)
 [![Coverage Status](https://coveralls.io/repos/github/tilfin/dynamo-processor/badge.svg?branch=master)](https://coveralls.io/github/tilfin/dynamo-processor?branch=master)
 
 DynamoDB processor operates a process by simple JSON expression.
@@ -11,12 +11,13 @@ DynamoDB processor operates a process by simple JSON expression.
 ## Features
 
 * If it have failed to set child objects to Map Type field, auto trying to update with initial fields again. futhermore, If it have failed by the conflict, auto trying the updating process at first once more.
-* Node.js 10 or later
+* Node.js 12 or later
+* AWS SDK for JavaScript v3
 
 ## Install
 
 ```
-$ npm install aws-sdk
+$ npm install -save @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb @aws-sdk/util-dynamodb
 $ npm install -save dynamo-processor
 ```
 
@@ -29,7 +30,7 @@ const dp = new DynamoProcessor({ region: 'ap-northeast-1' });
 
 `new DynamoProcessor(options)`
 
-* **options** `<Object>` AWS Config options as well
+* **options** `<Object>` DynamoDBClientConfig as well
   * **wrapFunc** `<Boolean>` If this is true, proc method returns a _Function_ that wraps the _Promise_ in case that promise evaluation need lazy. (default is false)
 
 

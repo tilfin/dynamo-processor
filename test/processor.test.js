@@ -1,8 +1,7 @@
-const AWS = require('aws-sdk')
 const _ =  require('lodash')
 const helper = require('./helper')
 const DynamoProcessor = require('../lib')
-const dp = new DynamoProcessor({ ...helper.awsOpts })
+const dp = new DynamoProcessor({ ...helper.ddbOpts })
 
 describe('DynamoProcessor', () => {
   beforeAll(() => {
@@ -66,7 +65,7 @@ describe('DynamoProcessor', () => {
       const dbItem = await helper.getDoc(3)
       expect(dbItem).toEqual({
         id: 3, name: 'Ken', age: 10,
-        cards: helper.docClient.createSet([1, 2])
+        cards: new Set([1, 2])
       })
     })
 
@@ -134,7 +133,7 @@ describe('DynamoProcessor', () => {
           list: [],
           map1: { foo: 1 },
           map2: {
-            bar: helper.docClient.createSet(['a']),
+            bar: new Set(['a']),
             size: 3
           }
         })
@@ -323,10 +322,8 @@ describe('DynamoProcessor', () => {
       const TABLE_NAME = 'hash-table'
 
       it('creates and deletes', async () => {
-        const ddb = new AWS.DynamoDB(helper.awsOpts);
-
         await dp.createTable(TABLE_NAME, { hashOnly: 'N' })
-        const { Table } = await ddb.describeTable({ TableName: TABLE_NAME }).promise()
+        const { Table } = await helper.dynamodb.describeTable({ TableName: TABLE_NAME })
 
         expect(Table.AttributeDefinitions[0].AttributeName).toEqual('hashOnly')
         expect(Table.AttributeDefinitions[0].AttributeType).toEqual('N')
@@ -345,15 +342,13 @@ describe('DynamoProcessor', () => {
       const TABLE_NAME = 'hashrange-table'
 
       it('creates and deletes', async () => {
-        const ddb = new AWS.DynamoDB(helper.awsOpts)
-
         await dp.createTable(TABLE_NAME, {
           hash: 'S', range: 'N'
         }, {
           readCU: 11, writeCU: 12
         })
 
-        const { Table } = await ddb.describeTable({ TableName: TABLE_NAME }).promise()
+        const { Table } = await helper.dynamodb.describeTable({ TableName: TABLE_NAME })
         expect(Table.AttributeDefinitions).toEqual([
           {
             AttributeName: 'hash',
@@ -428,10 +423,9 @@ describe('DynamoProcessor', () => {
       }
 
       it('creates and deletes', async () => {
-        const ddb = new AWS.DynamoDB(helper.awsOpts)
         await dp.createTable(createParams)
 
-        const { Table } = await ddb.describeTable({ TableName: TABLE_NAME }).promise()
+        const { Table } = await helper.dynamodb.describeTable({ TableName: TABLE_NAME })
         expect(Table).toMatchObject(createParams)
 
         await dp.deleteTable(TABLE_NAME)
