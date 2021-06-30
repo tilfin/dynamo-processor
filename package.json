@@ -28,13 +28,14 @@
   "homepage": "https://github.com/tilfin/dynamo-processor#readme",
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": "^3.19.0",
-    "@aws-sdk/lib-dynamodb": "^3.19.0"
+    "@aws-sdk/lib-dynamodb": "^3.19.0",
+    "@aws-sdk/util-dynamodb": "^3.19.0"
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.19.0",
     "@aws-sdk/lib-dynamodb": "^3.19.0",
+    "@aws-sdk/util-dynamodb": "^3.19.0",
     "@types/node": "^15.12.5",
-    "aws-sdk": "^2.936.0",
     "coveralls": "^3.1.1",
     "jest": "^27.0.6",
     "lodash": "^4.17.21",

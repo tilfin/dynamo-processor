@@ -1,4 +1,3 @@
-import { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { UpdateCommandInput } from '@aws-sdk/lib-dynamodb'
 import { Key, DocumentItem, Operation } from './types'
 
@@ -57,7 +56,7 @@ export class Expression<T extends DocumentItem> {
 
     const result: UpdateCommandInput = {
       TableName: table,
-      Key: key as { [key: string]: AttributeValue },
+      Key: key as any,
       UpdateExpression: this.toExpression(),
       ExpressionAttributeNames: this.#attrNames,
       ReturnValues: 'ALL_NEW'
@@ -174,7 +173,7 @@ export class Expression<T extends DocumentItem> {
   }
 
   toExpression() {
-    const exp = []
+    const exp: string[] = []
 
     if (this.#sets.length) {
       exp.push('SET ' + this.#sets.join(', '))

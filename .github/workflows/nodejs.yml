@@ -20,8 +20,12 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Setup DynamoDB Local
+      uses: rrainn/dynamodb-action@v2.0.0
+      with:
+        port: 8000
     - run: npm install
     - run: npm run build
-    - run: npm coverage
+    - run: npm test
       env:
         CI: true

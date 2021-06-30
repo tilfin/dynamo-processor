@@ -1,4 +1,4 @@
-import { CreateTableCommandInput, DynamoDB, DynamoDBClient, DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
+import { AttributeDefinition, CreateTableCommandInput, DynamoDB, DynamoDBClient, DynamoDBClientConfig, KeySchemaElement } from '@aws-sdk/client-dynamodb'
 import { BatchGetCommandInput, DeleteCommandInput, DynamoDBDocumentClient, GetCommandInput, PutCommandInput } from '@aws-sdk/lib-dynamodb'
 
 import { Key, DocumentItem, OperationData, Operation, PutItem } from './types'
@@ -297,7 +297,7 @@ export class DynamoProcessor<T extends DocumentItem> {
   async createTable(table: string | CreateTableCommandInput, keySet: Record<string, any>, opts: { readCU?: number; writeCU?: number } = {}) {
     let params: CreateTableCommandInput;
     if (typeof table === 'string') {
-      const attrDefs = [], keySchema = [], keyTypes = ['HASH', 'RANGE'];
+      const attrDefs: AttributeDefinition[] = [], keySchema: KeySchemaElement[] = [], keyTypes = ['HASH', 'RANGE'];
       for (let [name, type] of Object.entries(keySet)) {
         const keyType = keyTypes.shift();
         if (!keyType) throw new Error('The keySet must be 1 or 2 pair(s)')
