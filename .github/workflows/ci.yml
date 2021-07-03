@@ -26,6 +26,9 @@ jobs:
         port: 8000
     - run: npm install
     - run: npm run build
-    - run: npm test
-      env:
-        CI: true
+    - run: npm run coverage
+    - name: Coveralls GitHub Action
+      if: matrix.node-version == '12.x'
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
