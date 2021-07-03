@@ -3,7 +3,7 @@ dynamo-processor
 
 [![NPM Version][npm-image]][npm-url]
 [![Node](https://img.shields.io/node/v/dynamo-processor.svg)]()
-[![CI](https://github.com/tilfin/dynamo-processor/actions/workflows/nodejs.yml/badge.svg)](https://github.com/tilfin/dynamo-processor/actions/workflows/nodejs.yml)
+[![CI](https://github.com/tilfin/dynamo-processor/actions/workflows/ci.yml/badge.svg)](https://github.com/tilfin/dynamo-processor/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/tilfin/dynamo-processor/badge.svg?branch=master)](https://coveralls.io/github/tilfin/dynamo-processor?branch=master)
 
 DynamoDB processor operates a process by simple JSON expression.
