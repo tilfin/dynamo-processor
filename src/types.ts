@@ -1,11 +1,6 @@
-import { AttributeValueUpdate } from "@aws-sdk/client-dynamodb"
-import { NativeAttributeValue } from "@aws-sdk/util-dynamodb"
+import { NativeAttributeValue } from '@aws-sdk/util-dynamodb'
 
-export type DocumentItem =  {
-  [key: string]: Omit<AttributeValueUpdate, "Value"> & {
-      Value?: NativeAttributeValue;
-  };
-};
+export type DocumentItem = NativeAttributeValue
 
 export type Key<T extends DocumentItem> = { [P in keyof T]?: T[P] }
 export type PutItem<T extends DocumentItem> = { [P in keyof T]?: T[P] }

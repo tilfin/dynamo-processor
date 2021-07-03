@@ -1,7 +1,16 @@
 const _ =  require('lodash')
 const helper = require('./helper')
-const DynamoProcessor = require('../lib')
+import DynamoProcessor from '../lib/'
 const dp = new DynamoProcessor({ ...helper.ddbOpts })
+
+interface Data {
+  id: number,
+  name: string
+  age: number
+  weight?: number
+  tags: Set<string>
+  numset: Set<number>
+}
 
 describe('DynamoProcessor', () => {
   beforeAll(() => {
@@ -13,7 +22,7 @@ describe('DynamoProcessor', () => {
   })
 
   describe('#proc', () => {
-    const data = {
+    const data: Data = {
       id: 1,
       name: 'Taro',
       age: 16,

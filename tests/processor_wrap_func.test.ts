@@ -1,7 +1,14 @@
 const _ =  require('lodash')
 const helper = require('./helper')
-const DynamoProcessor = require('../lib')
+import DynamoProcessor from '../lib/'
 const dp = new DynamoProcessor({ wrapFunc: true, ...helper.ddbOpts })
+
+interface Data {
+  id: number,
+  name: string
+  age: number
+  weight?: number
+}
 
 describe('DynamoProcessor with wrapFunc = true', () => {
   beforeAll(() => {
@@ -13,7 +20,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
   })
 
   describe('#proc', () => {
-    const data = {
+    const data: Data = {
       id: 1,
       name: 'Taro',
       age: 16,
