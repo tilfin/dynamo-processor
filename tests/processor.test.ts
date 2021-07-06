@@ -268,17 +268,31 @@ describe('DynamoProcessor', () => {
       })
 
       it('puts items', async () => {
+        class A implements Data {
+          id!: number
+          name!: string
+          age!: number
+          weight?: number
+          tags!: Set<string>
+          numset!: Set<number>
+          constructor(params: any) {
+            Object.assign(this, params)
+          }
+        }
+        const dataA = new A({ id: 101, name: 'name', age: 5 })
+        
         const result = await dp.proc({
           table: 'tests',
-          items: [data3, data4]
+          items: [data3, data4, dataA]
         })
         expect(result).toEqual([])
 
         const dbItems = await Promise.all([
           helper.getDoc(12),
-          helper.getDoc(13)
+          helper.getDoc(13),
+          helper.getDoc(101)
         ])
-        expect(dbItems).toEqual([data3, data4])
+        expect(dbItems).toEqual([data3, data4, { id: 101, name: 'name', age: 5 }])
       })
 
       it('puts items as promise array', async () => {

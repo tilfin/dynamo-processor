@@ -42,7 +42,7 @@ export class DynamoProcessor<T extends DocumentItem> {
 
     const ddbOpts = opts || {};
     this.#dynamodb = new DynamoDB(ddbOpts);
-    this.#documentClient = DynamoDBDocumentClient.from(new DynamoDBClient(ddbOpts))
+    this.#documentClient = DynamoDBDocumentClient.from(new DynamoDBClient(ddbOpts), { marshallOptions: { convertClassInstanceToMap: true } })
     this.#docClient = new DocClient(this.#documentClient)
   }
 
