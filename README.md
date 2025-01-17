@@ -11,7 +11,7 @@ DynamoDB processor operates a process by simple JSON expression.
 ## Features
 
 * If it have failed to set child objects to Map Type field, auto trying to update with initial fields again. futhermore, If it have failed by the conflict, auto trying the updating process at first once more.
-* Node.js 12 or later
+* Node.js 20 or later
 * AWS SDK for JavaScript v3 
 
 Click [here](https://github.com/tilfin/dynamo-processor/tree/v2.0.4) for the version that supports **AWS SDK v2**
@@ -25,8 +25,17 @@ $ npm install -save dynamo-processor
 
 ## How to Use
 
+### CommonJS
+
 ```
 const DynamoProcessor = require('dynamo-processor')
+const dp = new DynamoProcessor({ region: 'ap-northeast-1' });
+```
+
+### ES Module
+
+```
+import { DynamoProcessor } from 'dynamo-processor'
 const dp = new DynamoProcessor({ region: 'ap-northeast-1' });
 ```
 
