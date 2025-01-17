@@ -1,6 +1,8 @@
 const _ =  require('lodash')
 const helper = require('./helper')
+import { KeyType, ProjectionType, ScalarAttributeType } from '@aws-sdk/client-dynamodb'
 import DynamoProcessor from '../lib/'
+
 const dp = new DynamoProcessor({ ...helper.ddbOpts })
 
 interface Data {
@@ -408,17 +410,17 @@ describe('DynamoProcessor', () => {
         KeySchema: [
           {
             AttributeName: 'id',
-            KeyType: 'HASH'
+            KeyType: KeyType.HASH,
           }
         ],
         AttributeDefinitions: [
           {
             AttributeName: 'id',
-            AttributeType: 'N'
+            AttributeType: ScalarAttributeType.N,
           },
           {
             AttributeName: 'externalId',
-            AttributeType: 'S',
+            AttributeType: ScalarAttributeType.S,
           }
         ],
         GlobalSecondaryIndexes: [
@@ -427,11 +429,11 @@ describe('DynamoProcessor', () => {
             KeySchema: [
               {
                 AttributeName: 'externalId',
-                KeyType: 'HASH',
+                KeyType: KeyType.HASH,
               },
             ],
             Projection: {
-              ProjectionType: 'KEYS_ONLY',
+              ProjectionType: ProjectionType.KEYS_ONLY,
             },
             ProvisionedThroughput: {
               ReadCapacityUnits: 20,
