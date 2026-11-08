@@ -10,7 +10,7 @@ DynamoDB processor operates a process by simple JSON expression.
 ## Features
 
 * If it have failed to set child objects to Map Type field, auto trying to update with initial fields again. futhermore, If it have failed by the conflict, auto trying the updating process at first once more.
-* Node.js 20 or later
+* Node.js 22.18 or later
 * AWS SDK for JavaScript v3 
 
 Click [here](https://github.com/tilfin/dynamo-processor/tree/v2.0.4) for the version that supports **AWS SDK v2**
@@ -282,6 +282,31 @@ dp.update('users', {
   console.log(item);
 });
 ```
+
+#### Initial fields
+
+If an update fails because a parent Map/List attribute of a nested path does not exist yet, the update is retried with **initFields** to initialize those attributes.
+Pass them as `initFields` option of `proc` or the 4th argument of `update`.
+
+```js
+dp.proc({
+  table: 'users',
+  key: { id: 4 },
+  set: { 'map1 foo': 1 },
+  pushset: { 'map2 bar': 'a' },
+  add: { 'map2 size': 3 }
+}, {
+  initFields: { map1: {}, map2: {}, list: [] }
+})
+.then((item) => {
+  console.log(item); // { id: 4, list: [], map1: { foo: 1 }, map2: { bar: Set { 'a' }, size: 3 } }
+});
+```
+
+**initFields** is copied with [`structuredClone`](https://developer.mozilla.org/docs/Web/API/Window/structuredClone) on each update, so it must contain only plain values (objects, arrays, strings, numbers, booleans, `null`, `Set`, `Uint8Array`, `bigint`).
+
+* Class instances such as `NumberValue` of `@aws-sdk/lib-dynamodb` lose their prototype and are written as a Map. Use `bigint` for large integers instead.
+* Functions or symbols cause a `DataCloneError`.
 
 ### deleteItem
 
