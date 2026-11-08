@@ -1,8 +1,6 @@
 import { UpdateCommandInput } from '@aws-sdk/lib-dynamodb'
 import { Key, DocumentItem, Operation } from './types'
 
-const cloneDeep = require('clone-deep')
-
 export class Expression<T extends DocumentItem> {
   #inits!: Record<string, any>
   #sets!: string[]
@@ -74,7 +72,7 @@ export class Expression<T extends DocumentItem> {
   }
 
   _reset() {
-    this.#inits = cloneDeep(this.initFields);
+    this.#inits = structuredClone(this.initFields);
     this.#sets = [];
     this.#adds = [];
     this.#removes = [];
