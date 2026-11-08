@@ -1,6 +1,8 @@
 const byId = (a: any[]) => [...a].sort((x, y) => x.id - y.id)
-const helper = require('./helper')
-import DynamoProcessor from '../lib/'
+import { describe, it, before, after, beforeEach } from 'node:test'
+import assert from 'node:assert/strict'
+import DynamoProcessor from '../lib/index.js'
+import * as helper from './helper.ts'
 const dp = new DynamoProcessor({ wrapFunc: true, ...helper.ddbOpts })
 
 interface Data {
@@ -11,11 +13,11 @@ interface Data {
 }
 
 describe('DynamoProcessor with wrapFunc = true', () => {
-  beforeAll(() => {
+  before(() => {
     return dp.createTable('tests', { id: 'N' })
   })
 
-  afterAll(() => {
+  after(() => {
     return dp.deleteTable('tests')
   })
 
@@ -36,7 +38,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
         table: 'tests',
         key: { id: 1 }
       })()
-      expect(item).toEqual(data)
+      assert.deepEqual(item, data)
     })
 
     it('gets null', async () => {
@@ -44,7 +46,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
         table: 'tests',
         key: { id: -1 }
       })()
-      expect(item).toBeNull()
+      assert.equal(item, null)
     })
 
     it('puts an item', async () => {
@@ -55,7 +57,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
       })()
  
       const dbItem = await helper.getDoc(2)
-      expect(dbItem).toEqual(data)
+      assert.deepEqual(dbItem, data)
     })
 
     it('updates an item', async () => {
@@ -68,7 +70,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
       })()
 
       const dbItem = await helper.getDoc(3)
-      expect(dbItem).toEqual({
+      assert.deepEqual(dbItem, {
         id: 3, name: 'Ken', age: 10,
         cards: new Set([1, 2])
       })
@@ -81,7 +83,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
         remove: ['weight']
       })()
       delete data.weight
-      expect(item).toEqual(data)
+      assert.deepEqual(item, data)
     })
 
     describe('with initFields', () => {
@@ -104,7 +106,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           }
         })()
 
-        expect(item).toEqual({
+        assert.deepEqual(item, {
           id: 4,
           list: [],
           map1: { foo: 1 },
@@ -134,7 +136,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           table: 'tests',
           keys: [{ id: 10 }, { id: 11 }]
         })()
-        expect(byId(items)).toEqual(byId([data1, data2]))
+        assert.deepEqual(byId(items), byId([data1, data2]))
       })
 
       it('gets items as function array', async () => {
@@ -145,7 +147,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           .map(f => f());
 
         const items = await Promise.all(promises)
-        expect(items).toEqual([data1, data2])
+        assert.deepEqual(items, [data1, data2])
       })
 
       it('puts items', async () => {
@@ -158,7 +160,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           helper.getDoc(12),
           helper.getDoc(13)
         ]) 
-        expect(dbItems).toEqual([data3, data4])
+        assert.deepEqual(dbItems, [data3, data4])
       })
 
       it('puts items as function array', async () => {
@@ -173,7 +175,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           helper.getDoc(12),
           helper.getDoc(13)
         ]) 
-        expect(dbItems).toEqual([data3, data4])
+        assert.deepEqual(dbItems, [data3, data4])
       })
     })
   })

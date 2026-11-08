@@ -1,7 +1,9 @@
 const byId = (a: any[]) => [...a].sort((x, y) => x.id - y.id)
-const helper = require('./helper')
 import { KeyType, ProjectionType, ScalarAttributeType } from '@aws-sdk/client-dynamodb'
-import DynamoProcessor from '../lib/'
+import { describe, it, before, after, beforeEach } from 'node:test'
+import assert from 'node:assert/strict'
+import DynamoProcessor from '../lib/index.js'
+import * as helper from './helper.ts'
 
 const dp = new DynamoProcessor({ ...helper.ddbOpts })
 
@@ -15,11 +17,11 @@ interface Data {
 }
 
 describe('DynamoProcessor', () => {
-  beforeAll(() => {
+  before(() => {
     return dp.createTable('tests', { id: 'N' })
   })
 
-  afterAll(() => {
+  after(() => {
     return dp.deleteTable('tests')
   })
 
@@ -42,7 +44,7 @@ describe('DynamoProcessor', () => {
         table: 'tests',
         key: { id: 1 }
       })
-      expect(item).toEqual(data)
+      assert.deepEqual(item, data)
     })
 
     it('gets null', async () => {
@@ -50,7 +52,7 @@ describe('DynamoProcessor', () => {
         table: 'tests',
         key: { id: -1 }
       })
-      expect(item).toBeNull()
+      assert.equal(item, null)
     })
 
     it('puts an item', async () => {
@@ -61,7 +63,7 @@ describe('DynamoProcessor', () => {
       })
 
       const dbItem = await helper.getDoc(2)
-      expect(dbItem).toEqual(data)
+      assert.deepEqual(dbItem, data)
     })
 
     it('updates an item', async () => {
@@ -74,7 +76,7 @@ describe('DynamoProcessor', () => {
       })
 
       const dbItem = await helper.getDoc(3)
-      expect(dbItem).toEqual({
+      assert.deepEqual(dbItem, {
         id: 3, name: 'Ken', age: 10,
         cards: new Set([1, 2])
       })
@@ -87,7 +89,7 @@ describe('DynamoProcessor', () => {
         remove: ['weight']
       })
       delete data.weight;
-      expect(item).toEqual(data)
+      assert.deepEqual(item, data)
     })
 
     it('updates an item with delete', async () => {
@@ -99,7 +101,7 @@ describe('DynamoProcessor', () => {
           numset: 20,
         }
       })
-      expect(item).toMatchObject({
+      assert.partialDeepStrictEqual(item, {
         name: 'Taro',
         age: 16,
         tags: new Set(['def']),
@@ -113,10 +115,10 @@ describe('DynamoProcessor', () => {
         table: 'tests',
         key: { id: 2 }
       })
-      expect(res).toBeNull();
+      assert.equal(res, null);
 
       const dbItem = await helper.getDoc(2)
-      expect(dbItem).toBeNull()
+      assert.equal(dbItem, null)
     })
 
     describe('with initFields', () => {
@@ -139,7 +141,7 @@ describe('DynamoProcessor', () => {
           }
         })
 
-        expect(item).toEqual({
+        assert.deepEqual(item, {
           id: 4,
           list: [],
           map1: { foo: 1 },
@@ -172,7 +174,7 @@ describe('DynamoProcessor', () => {
           }
         })
 
-        expect(item).toEqual({
+        assert.deepEqual(item, {
           id: 5,
           str: 'something',
           map1: {
@@ -222,7 +224,7 @@ describe('DynamoProcessor', () => {
 
         const item = await helper.getDoc(6);
 
-        expect(item).toEqual({
+        assert.deepEqual(item, {
           id: 6,
           str: 'something',
           map1: {
@@ -257,7 +259,7 @@ describe('DynamoProcessor', () => {
           keys: [{ id: 10 }, { id: 11 }]
         })
  
-        expect(byId(items)).toEqual(byId([data1, data2]))
+        assert.deepEqual(byId(items), byId([data1, data2]))
       })
 
       it('gets items as promise array', async () => {
@@ -266,7 +268,7 @@ describe('DynamoProcessor', () => {
           keys: [{ id: 10 }, { id: 11 }]
         }, { useBatch: false }))
 
-        expect(items).toEqual([data1, data2])
+        assert.deepEqual(items, [data1, data2])
       })
 
       it('puts items', async () => {
@@ -287,14 +289,14 @@ describe('DynamoProcessor', () => {
           table: 'tests',
           items: [data3, data4, dataA]
         })
-        expect(result).toEqual([])
+        assert.deepEqual(result, [])
 
         const dbItems = await Promise.all([
           helper.getDoc(12),
           helper.getDoc(13),
           helper.getDoc(101)
         ])
-        expect(dbItems).toEqual([data3, data4, { id: 101, name: 'name', age: 5 }])
+        assert.deepEqual(dbItems, [data3, data4, { id: 101, name: 'name', age: 5 }])
       })
 
       it('puts items as promise array', async () => {
@@ -307,7 +309,7 @@ describe('DynamoProcessor', () => {
           helper.getDoc(12),
           helper.getDoc(13)
         ])
-        expect(dbItems).toEqual([data3, data4])
+        assert.deepEqual(dbItems, [data3, data4])
       })
 
       it('deletes items', async () => {
@@ -316,13 +318,13 @@ describe('DynamoProcessor', () => {
           table: 'tests',
           keys: [{ id: 10 }, { id: 11 }]
         })
-        expect(result).toBeUndefined()
+        assert.equal(result, undefined)
 
         const dbItems = await Promise.all([
           helper.getDoc(10),
           helper.getDoc(11)
         ])
-        expect(dbItems).toEqual([null, null])
+        assert.deepEqual(dbItems, [null, null])
       })
 
       it('deletes items as promise array', async () => {
@@ -331,13 +333,13 @@ describe('DynamoProcessor', () => {
           table: 'tests',
           keys: [{ id: 12 }, { id: 13 }]
         }, { useBatch: false }))
-        expect(results).toEqual([null, null])
+        assert.deepEqual(results, [null, null])
 
         const dbItems = await Promise.all([
           helper.getDoc(12),
           helper.getDoc(13)
         ])
-        expect(dbItems).toEqual([null, null])
+        assert.deepEqual(dbItems, [null, null])
       })
     })
   })
@@ -350,14 +352,14 @@ describe('DynamoProcessor', () => {
         await dp.createTable(TABLE_NAME, { hashOnly: 'N' })
         const { Table } = await helper.dynamodb.describeTable({ TableName: TABLE_NAME })
 
-        expect(Table.AttributeDefinitions[0].AttributeName).toEqual('hashOnly')
-        expect(Table.AttributeDefinitions[0].AttributeType).toEqual('N')
-        expect(Table.AttributeDefinitions.length).toEqual(1)
-        expect(Table.KeySchema[0].AttributeName).toEqual('hashOnly')
-        expect(Table.KeySchema[0].KeyType).toEqual('HASH')
-        expect(Table.KeySchema.length).toEqual(1)
-        expect(Table.ProvisionedThroughput.ReadCapacityUnits).toEqual(5)
-        expect(Table.ProvisionedThroughput.WriteCapacityUnits).toEqual(5)
+        assert.deepEqual(Table.AttributeDefinitions[0].AttributeName, 'hashOnly')
+        assert.deepEqual(Table.AttributeDefinitions[0].AttributeType, 'N')
+        assert.deepEqual(Table.AttributeDefinitions.length, 1)
+        assert.deepEqual(Table.KeySchema[0].AttributeName, 'hashOnly')
+        assert.deepEqual(Table.KeySchema[0].KeyType, 'HASH')
+        assert.deepEqual(Table.KeySchema.length, 1)
+        assert.deepEqual(Table.ProvisionedThroughput.ReadCapacityUnits, 5)
+        assert.deepEqual(Table.ProvisionedThroughput.WriteCapacityUnits, 5)
 
         await dp.deleteTable(TABLE_NAME)
       })
@@ -374,7 +376,7 @@ describe('DynamoProcessor', () => {
         })
 
         const { Table } = await helper.dynamodb.describeTable({ TableName: TABLE_NAME })
-        expect(Table.AttributeDefinitions).toEqual([
+        assert.deepEqual(Table.AttributeDefinitions, [
           {
             AttributeName: 'hash',
             AttributeType: 'S'
@@ -384,7 +386,7 @@ describe('DynamoProcessor', () => {
             AttributeType: 'N'
           }
         ])
-        expect(Table.KeySchema).toEqual([
+        assert.deepEqual(Table.KeySchema, [
           {
             AttributeName: 'hash',
             KeyType: 'HASH'
@@ -394,7 +396,7 @@ describe('DynamoProcessor', () => {
             KeyType: 'RANGE'
           }
         ])
-        expect(Table.ProvisionedThroughput).toMatchObject({
+        assert.partialDeepStrictEqual(Table.ProvisionedThroughput, {
           ReadCapacityUnits: 11,
           WriteCapacityUnits: 12,
         })
@@ -451,7 +453,7 @@ describe('DynamoProcessor', () => {
         await dp.createTable(createParams)
 
         const { Table } = await helper.dynamodb.describeTable({ TableName: TABLE_NAME })
-        expect(Table).toMatchObject(createParams)
+        assert.partialDeepStrictEqual(Table, createParams)
 
         await dp.deleteTable(TABLE_NAME)
       })
