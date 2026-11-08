@@ -1,4 +1,4 @@
-const _ =  require('lodash')
+const byId = (a: any[]) => [...a].sort((x, y) => x.id - y.id)
 const helper = require('./helper')
 import DynamoProcessor from '../lib/'
 const dp = new DynamoProcessor({ wrapFunc: true, ...helper.ddbOpts })
@@ -134,7 +134,7 @@ describe('DynamoProcessor with wrapFunc = true', () => {
           table: 'tests',
           keys: [{ id: 10 }, { id: 11 }]
         })()
-        expect(_.sortBy(items, 'id')).toEqual(_.sortBy([data1, data2], 'id'))
+        expect(byId(items)).toEqual(byId([data1, data2]))
       })
 
       it('gets items as function array', async () => {

@@ -1,4 +1,4 @@
-const _ =  require('lodash')
+const byId = (a: any[]) => [...a].sort((x, y) => x.id - y.id)
 const helper = require('./helper')
 import { KeyType, ProjectionType, ScalarAttributeType } from '@aws-sdk/client-dynamodb'
 import DynamoProcessor from '../lib/'
@@ -257,7 +257,7 @@ describe('DynamoProcessor', () => {
           keys: [{ id: 10 }, { id: 11 }]
         })
  
-        expect(_.sortBy(items, 'id')).toEqual(_.sortBy([data1, data2], 'id'))
+        expect(byId(items)).toEqual(byId([data1, data2]))
       })
 
       it('gets items as promise array', async () => {
