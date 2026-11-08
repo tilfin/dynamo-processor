@@ -15,8 +15,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "jest --runInBand",
-    "coverage": "jest --runInBand --collectCoverage"
+    "test": "tsc && node --test --test-concurrency=1 tests/*.test.ts",
+    "coverage": "tsc && node --test --test-concurrency=1 --experimental-test-coverage tests/*.test.ts"
   },
   "repository": {
     "type": "git",
@@ -41,16 +41,11 @@
     "@aws-sdk/client-dynamodb": "^3.730.0",
     "@aws-sdk/lib-dynamodb": "^3.730.0",
     "@aws-sdk/util-dynamodb": "^3.730.0",
-    "@types/jest": "^29.5.14",
     "@types/node": "^24.0.0",
-    "jest": "^29.7.0",
-    "lodash": "^4.17.21",
-    "nyc": "^18.0.0",
-    "ts-jest": "^29.2.5",
     "typescript": "^5.6.3"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18"
   },
   "dependencies": {
     "clone-deep": "^4.0.1"
