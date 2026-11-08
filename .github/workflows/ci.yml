@@ -12,23 +12,18 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [22.x, 24.x, 26.x]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7.0.1
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v7.1.0
       with:
         node-version: ${{ matrix.node-version }}
     - name: Setup DynamoDB Local
-      uses: rrainn/dynamodb-action@v2.0.0
+      uses: rrainn/dynamodb-action@v5.0.0
       with:
         port: 8000
     - run: npm install
     - run: npm run build
     - run: npm run coverage
-    - name: Coveralls GitHub Action
-      if: matrix.node-version == '12.x'
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
